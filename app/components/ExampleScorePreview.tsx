@@ -36,9 +36,9 @@ export function ExampleScorePreview() {
           <div className={s.fixesTitle}>Top 3 fixes</div>
           <div className={s.fixList}>
             {[
-              "Hands drift forward before hips fire",
-              "Back elbow drops below slot at load",
-              "Barrel drags through the zone late",
+              "Elbow drops below shoulder at foot strike",
+              "Glove side flies open early — leaks power",
+              "Stride lands short — limits hip drive",
             ].map((text, idx) => (
               <div key={idx} className={s.fixItem}>
                 <div className={s.fixIcon}>
@@ -55,7 +55,7 @@ export function ExampleScorePreview() {
         <div className={s.proTipTitle}>Pro tip</div>
         <div className={s.proTipBody}>
           Best results come from a side-angle video where your full body
-          and the bat path are visible.
+          and arm path are visible through the entire delivery.
         </div>
       </div>
     </div>
