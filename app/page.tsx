@@ -52,6 +52,7 @@ export default function Page() {
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
   // Handle post-subscription redirect
+  const [showRateLimit, setShowRateLimit] = useState(false);
   const [showSubWelcome, setShowSubWelcome] = useState(false);
   const [subLinkSent, setSubLinkSent] = useState(false);
   useEffect(() => {
@@ -265,6 +266,11 @@ export default function Page() {
       });
 
       if (!res.ok) {
+        if (res.status === 429) {
+          finishProgress();
+          setShowRateLimit(true);
+          return;
+        }
         const errText = await res.text();
         throw new Error(errText);
       }
@@ -429,6 +435,43 @@ export default function Page() {
               onClick={() => setShowSubWelcome(false)}
             >
               {subLinkSent ? "Close" : "Stay on this page"}
+            </button>
+          </div>
+        </div>
+      )}
+
+      {showRateLimit && (
+        <div className={s.subWelcomeOverlay}>
+          <div className={s.subWelcomeCard}>
+            <div className={s.subWelcomeIcon}>⚡</div>
+            <div className={s.subWelcomeTitle}>Daily limit reached</div>
+            <div className={s.subWelcomeText}>
+              You&apos;ve used your 2 free analyses for today. Upgrade to ArmIQ Pro for unlimited analyses, score tracking, and custom pitching programs.
+            </div>
+            <button
+              type="button"
+              className={s.subWelcomeBtn}
+              onClick={async () => {
+                if (!email.includes("@")) return;
+                const res = await fetch("/api/subscribe", {
+                  method: "POST",
+                  headers: { "content-type": "application/json" },
+                  body: JSON.stringify({ email }),
+                });
+                if (res.ok) {
+                  const { url } = await res.json();
+                  window.location.href = url;
+                }
+              }}
+            >
+              Get ArmIQ Pro →
+            </button>
+            <button
+              type="button"
+              className={s.subWelcomeDismiss}
+              onClick={() => setShowRateLimit(false)}
+            >
+              OK
             </button>
           </div>
         </div>
