@@ -46,6 +46,9 @@ export async function POST(req: Request) {
 
     const prompt = `You are an elite baseball/softball pitching mechanics analyst. You are looking at 4 frames extracted from a pitching video (roughly: wind-up/set, leg lift/balance, arm cocking/stride, release/follow-through).
 
+FIRST: Verify these frames show a pitcher throwing or in a pitching motion. If the frames do NOT show a pitcher (e.g. it's a random video, a batting video, a person walking, or anything else), return this exact JSON and nothing else:
+{"error": "not_a_pitch", "message": "This doesn't appear to be a pitching video. Please upload a side-angle video of a pitching delivery."}
+
 This athlete is in the ${safeAge} age group. Calibrate your expectations accordingly:
 - 8U/10U: Focus on balance and basic throwing motion. Don't expect full mechanics.
 - 12U/14U: Developing mechanics. Hip-to-shoulder separation should be emerging.
@@ -126,6 +129,10 @@ IMPORTANT: Map the scores as:
 
     const raw = completion.choices?.[0]?.message?.content || "{}";
     const parsed = JSON.parse(raw);
+
+    if (parsed?.error === "not_a_pitch") {
+      return new Response(parsed.message || "This doesn't appear to be a pitching video.", { status: 400 });
+    }
 
     const timing = clampInt(parsed?.timing);
     const power_transfer = clampInt(parsed?.power_transfer);
