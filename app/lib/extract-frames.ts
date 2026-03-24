@@ -18,12 +18,14 @@ export async function extractFrames(file: File, frameCount = 4): Promise<string[
   canvas.width = 720;
   canvas.height = 400;
 
-  // Target key pitching phases:
-  // ~10% = wind-up/set, ~35% = leg lift/balance, ~55% = arm cocking/stride, ~75% = release/follow-through
-  const phasePoints = [0.10, 0.35, 0.55, 0.75];
-  const times = phasePoints
-    .slice(0, frameCount)
-    .map((p) => Math.max(0, Math.min(duration - 0.05, p * duration)));
+  // Evenly space frames across the middle 80% of the video
+  // Skip first 10% and last 10% to avoid black frames
+  const startPct = 0.10;
+  const endPct = 0.90;
+  const range = endPct - startPct;
+  const times = Array.from({ length: frameCount }, (_, i) =>
+    Math.max(0.1, Math.min(duration - 0.1, (startPct + (range * (i + 0.5)) / frameCount) * duration))
+  );
 
   const frames: string[] = [];
   for (const t of times) {
