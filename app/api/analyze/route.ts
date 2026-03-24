@@ -36,13 +36,27 @@ export async function POST(req: Request) {
         const ddb = DynamoDBDocumentClient.from(new DynamoDBClient({ region: "us-east-2" }));
 
         const oneDayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
-        const result = await ddb.send(new QueryCommand({
-          TableName: "SwingAnalyses",
-          IndexName: "email-index",
-          KeyConditionExpression: "email = :e",
-          FilterExpression: "created_at >= :since",
-          ExpressionAttributeValues: { ":e": email.toLowerCase().trim(), ":since": oneDayAgo },
-        }));
+        const emailLower = email.toLowerCase().trim();
+        const emailOrig = email.trim();
+
+        const [r1, r2] = await Promise.all([
+          ddb.send(new QueryCommand({
+            TableName: "SwingAnalyses",
+            IndexName: "email-index",
+            KeyConditionExpression: "email = :e",
+            FilterExpression: "created_at >= :since",
+            ExpressionAttributeValues: { ":e": emailLower, ":since": oneDayAgo },
+          })),
+          emailLower !== emailOrig ? ddb.send(new QueryCommand({
+            TableName: "SwingAnalyses",
+            IndexName: "email-index",
+            KeyConditionExpression: "email = :e",
+            FilterExpression: "created_at >= :since",
+            ExpressionAttributeValues: { ":e": emailOrig, ":since": oneDayAgo },
+          })) : Promise.resolve({ Items: [] }),
+        ]);
+
+        const result = { Items: [...(r1.Items || []), ...(r2.Items || [])] };
 
         const todayCount = (result.Items || []).length;
         if (todayCount >= 2) {
