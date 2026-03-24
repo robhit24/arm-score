@@ -28,6 +28,31 @@ export async function POST(req: Request) {
       return new Response("Need frames[] (>=3)", { status: 400 });
     }
 
+    // Rate limit: 2 free analyses per day per email (subscribers bypass via force_fresh)
+    if (!force_fresh) {
+      try {
+        const { DynamoDBClient } = await import("@aws-sdk/client-dynamodb");
+        const { DynamoDBDocumentClient, QueryCommand } = await import("@aws-sdk/lib-dynamodb");
+        const ddb = DynamoDBDocumentClient.from(new DynamoDBClient({ region: "us-east-2" }));
+
+        const oneDayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+        const result = await ddb.send(new QueryCommand({
+          TableName: "SwingAnalyses",
+          IndexName: "email-index",
+          KeyConditionExpression: "email = :e",
+          FilterExpression: "created_at >= :since",
+          ExpressionAttributeValues: { ":e": email.toLowerCase().trim(), ":since": oneDayAgo },
+        }));
+
+        const todayCount = (result.Items || []).length;
+        if (todayCount >= 2) {
+          return new Response("You've reached your daily limit of 2 free analyses. Subscribe to ArmIQ Pro for unlimited analyses.", { status: 429 });
+        }
+      } catch (e) {
+        console.log("Rate limit check failed:", e);
+      }
+    }
+
 
     const prompt = `You are an elite baseball/softball pitching mechanics analyst. You are looking at 4 frames extracted from a pitching video (roughly: wind-up/set, leg lift/balance, arm cocking/stride, release/follow-through).
 
