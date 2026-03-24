@@ -118,7 +118,6 @@ export default function Dashboard() {
           sport: analyzeSport,
           age_group: analyzeAge,
           frames,
-          frame_hash: frameHash,
           force_fresh: true,
         }),
       });
@@ -138,7 +137,6 @@ export default function Dashboard() {
             email: user.email,
             sport: analyzeSport,
             age_group: analyzeAge,
-            frame_hash: frameHash,
             source: "armiq",
             analysis: data,
           }),

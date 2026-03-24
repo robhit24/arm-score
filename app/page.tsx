@@ -258,38 +258,21 @@ export default function Page() {
         setThumbnailUrl(frames[0]);
       }
 
-      // Check for duplicate swing
-      const frameHash = await hashFrames(frames);
-      const cached = getCachedResult(frameHash);
+      const res = await fetch("/api/analyze", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ email, sport, age_group: ageGroup, frames }),
+      });
 
-      let data: Result;
-      let newSwingId: string;
-
-      if (cached) {
-        // Same swing — return cached result instantly
-        data = cached.result;
-        newSwingId = cached.swingId;
-        finishProgress();
-      } else {
-        const res = await fetch("/api/analyze", {
-          method: "POST",
-          headers: { "content-type": "application/json" },
-          body: JSON.stringify({ email, sport, age_group: ageGroup, frames, frame_hash: frameHash }),
-        });
-
-        if (!res.ok) {
-          const errText = await res.text();
-          throw new Error(errText);
-        }
-
-        data = (await res.json()) as Result;
-        finishProgress();
-
-        newSwingId = crypto.randomUUID();
-
-        // Cache for dedup
-        setCachedResult(frameHash, data, newSwingId);
+      if (!res.ok) {
+        const errText = await res.text();
+        throw new Error(errText);
       }
+
+      const data = (await res.json()) as Result;
+      finishProgress();
+
+      const newSwingId = crypto.randomUUID();
 
       setSwingId(newSwingId);
       setResult(data);
@@ -311,7 +294,6 @@ export default function Page() {
           email,
           sport,
           age_group: ageGroup,
-          frame_hash: frameHash,
           source: "armiq",
           analysis: data,
         }),
