@@ -1,0 +1,37 @@
+service: generate-and-send-plan
+frameworkVersion: "3"
+
+provider:
+  name: aws
+  runtime: nodejs20.x
+  region: us-east-2
+  stage: live
+  timeout: 300
+  memorySize: 1536
+
+  environment:
+    SWING_TABLE: SwingAnalyses
+    JOBS_TABLE: PlanJobs
+    SES_FROM: ${env:SES_FROM}
+    OPENAI_API_KEY: ${env:OPENAI_API_KEY}
+    BRAND_NAME: HIT24
+    BRAND_PRIMARY: "#e10600"
+    BRAND_DARK: "#111111"
+    REUPLOAD_URL: "https://swing-score-rho.vercel.app"
+
+  iam:
+    role:
+      statements:
+        - Effect: Allow
+          Action:
+            - dynamodb:GetItem
+            - dynamodb:UpdateItem
+          Resource: "*"
+        - Effect: Allow
+          Action:
+            - ses:SendRawEmail
+          Resource: "*"
+
+functions:
+  generateAndSendPlan:
+    handler: handler.handler

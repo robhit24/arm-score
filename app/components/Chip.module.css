@@ -1,0 +1,52 @@
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 10px;
+  border-radius: 999px;
+  font-weight: 1000;
+  font-size: 12px;
+  letter-spacing: -0.1px;
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  white-space: nowrap;
+}
+
+.dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 999px;
+  display: inline-block;
+  opacity: 0.9;
+}
+
+.chip[data-tone="dark"] {
+  background: rgba(17, 17, 17, 0.08);
+  color: #111;
+}
+.chip[data-tone="dark"] .dot {
+  background: #111;
+}
+
+.chip[data-tone="red"] {
+  background: rgba(225, 6, 0, 0.10);
+  color: #a60400;
+}
+.chip[data-tone="red"] .dot {
+  background: #a60400;
+}
+
+.chip[data-tone="green"] {
+  background: rgba(22, 163, 74, 0.12);
+  color: #0f7a34;
+}
+.chip[data-tone="green"] .dot {
+  background: #0f7a34;
+}
+
+.chip[data-tone="amber"] {
+  background: rgba(245, 158, 11, 0.14);
+  color: #a16207;
+}
+.chip[data-tone="amber"] .dot {
+  background: #a16207;
+}

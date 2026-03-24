@@ -1,0 +1,38 @@
+.card {
+  padding: 12px;
+  border-radius: 16px;
+  background: rgba(17, 17, 17, 0.03);
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  text-align: left;
+}
+
+.header {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.num {
+  width: 28px;
+  height: 28px;
+  border-radius: 10px;
+  background: #111;
+  color: white;
+  display: grid;
+  place-items: center;
+  font-weight: 1100;
+  font-size: 14px;
+}
+
+.title {
+  font-weight: 1100;
+  color: #111;
+}
+
+.desc {
+  margin-top: 6px;
+  color: rgba(17, 17, 17, 0.72);
+  font-weight: 850;
+  font-size: 13px;
+  line-height: 1.35;
+}

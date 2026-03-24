@@ -1,0 +1,165 @@
+.wrap {
+  display: grid;
+  gap: 12px;
+}
+
+.card {
+  position: relative;
+  border-radius: 18px;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  background: rgba(255, 255, 255, 0.96);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.06);
+  padding: 16px;
+  text-align: left;
+  overflow: hidden;
+}
+
+.badge {
+  display: inline-block;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: rgba(225, 6, 0, 0.10);
+  border: 1px solid rgba(225, 6, 0, 0.25);
+  color: #a60400;
+  font-weight: 1000;
+  font-size: 11px;
+  letter-spacing: 0.3px;
+  text-transform: uppercase;
+}
+
+.badgeWrap {
+  text-align: center;
+  margin-bottom: 10px;
+}
+
+.scoreWrap {
+  text-align: center;
+  margin-bottom: 14px;
+}
+
+.scoreNum {
+  font-size: 56px;
+  font-weight: 1200;
+  color: #16a34a;
+  letter-spacing: -1.5px;
+  line-height: 1;
+}
+
+.scoreLabel {
+  font-size: 13px;
+  font-weight: 1200;
+  color: #111;
+  margin-top: 4px;
+}
+
+.scoreSub {
+  font-size: 12px;
+  font-weight: 1000;
+  color: rgba(17, 17, 17, 0.65);
+  margin-top: 2px;
+}
+
+.bars {
+  display: grid;
+  gap: 10px;
+  margin-bottom: 14px;
+}
+
+.barItem {
+  display: grid;
+  gap: 5px;
+}
+
+.barHeader {
+  display: flex;
+  justify-content: space-between;
+  font-size: 12px;
+  font-weight: 950;
+  color: #111;
+}
+
+.barValue {
+  font-weight: 1000;
+}
+
+.barTrack {
+  height: 8px;
+  width: 100%;
+  background: rgba(17, 17, 17, 0.10);
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.barFill {
+  height: 100%;
+  background: #111;
+  border-radius: 999px;
+}
+
+.fixes {
+  border-top: 1px solid rgba(0, 0, 0, 0.06);
+  padding-top: 12px;
+}
+
+.fixesTitle {
+  font-size: 13px;
+  font-weight: 1200;
+  color: #111;
+  margin-bottom: 8px;
+}
+
+.fixList {
+  display: grid;
+  gap: 6px;
+}
+
+.fixItem {
+  display: flex;
+  gap: 8px;
+  align-items: flex-start;
+}
+
+.fixIcon {
+  width: 14px;
+  height: 14px;
+  border-radius: 4px;
+  background: rgba(17, 17, 17, 0.10);
+  display: grid;
+  place-items: center;
+  margin-top: 2px;
+  flex: 0 0 auto;
+}
+
+.fixIconDot {
+  width: 6px;
+  height: 6px;
+  border-radius: 2px;
+  background: #111;
+}
+
+.fixText {
+  color: #111;
+  font-weight: 850;
+  font-size: 12px;
+  line-height: 1.35;
+}
+
+.proTip {
+  padding: 14px;
+  border-radius: 16px;
+  background: rgba(225, 6, 0, 0.06);
+  border: 1px solid rgba(225, 6, 0, 0.14);
+  color: rgba(17, 17, 17, 0.86);
+  font-weight: 900;
+  line-height: 1.35;
+  text-align: left;
+}
+
+.proTipTitle {
+  font-weight: 1200;
+  color: #111;
+}
+
+.proTipBody {
+  margin-top: 6px;
+}

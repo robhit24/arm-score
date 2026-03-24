@@ -1,0 +1,21 @@
+.row {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 8px 10px;
+  border-radius: 12px;
+  background: rgba(17, 17, 17, 0.03);
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  font-size: 13px;
+  font-weight: 900;
+  color: #111;
+}
+
+.label {
+  color: rgba(17, 17, 17, 0.75);
+  font-weight: 900;
+}
+
+.value {
+  font-weight: 1100;
+}

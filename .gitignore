@@ -1,0 +1,6 @@
+node_modules
+.next
+.vercel
+aws/generate-and-send/.serverless
+aws/generate-and-send/node_modules
+.env.local

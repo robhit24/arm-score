@@ -1,0 +1,203 @@
+.link {
+  text-decoration: none;
+  display: block;
+}
+
+.link[data-disabled="true"] {
+  pointer-events: none;
+}
+
+/* ─── Card shell ─── */
+.card {
+  border-radius: 20px;
+  border: 1px solid rgba(0, 0, 0, 0.07);
+  background: #fff;
+  padding: 0;
+  overflow: hidden;
+  transition: transform 200ms ease, box-shadow 200ms ease, opacity 200ms ease;
+  opacity: 0.72;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+.card:hover {
+  opacity: 1;
+  transform: translateY(-2px);
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.08);
+}
+
+.card[data-disabled="true"] {
+  opacity: 0.45;
+}
+
+.card[data-primary="true"] {
+  opacity: 1;
+  border: none;
+  box-shadow: 0 24px 60px rgba(225, 6, 0, 0.16), 0 0 0 2px rgba(225, 6, 0, 0.45);
+  transform: scale(1.02);
+}
+
+.card[data-primary="true"]:hover {
+  transform: scale(1.02) translateY(-2px);
+  box-shadow: 0 28px 70px rgba(225, 6, 0, 0.20), 0 0 0 2px rgba(225, 6, 0, 0.55);
+}
+
+/* ─── Top section (badge + price) ─── */
+.topSection {
+  padding: 20px 20px 16px;
+}
+
+.card[data-primary="true"] .topSection {
+  background: linear-gradient(168deg, rgba(225, 6, 0, 0.07) 0%, transparent 60%);
+}
+
+.badgeRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.label {
+  font-size: 13px;
+  font-weight: 900;
+  color: rgba(17, 17, 17, 0.55);
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+}
+
+.card[data-primary="true"] .label {
+  color: #a60400;
+}
+
+.priceRow {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.price {
+  font-size: 36px;
+  font-weight: 1200;
+  color: #111;
+  letter-spacing: -1px;
+  line-height: 1;
+}
+
+.card[data-primary="true"] .price {
+  font-size: 42px;
+}
+
+.priceDetail {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+}
+
+.strike {
+  font-size: 14px;
+  font-weight: 800;
+  color: rgba(17, 17, 17, 0.40);
+  text-decoration: line-through;
+}
+
+.perDay {
+  font-size: 13px;
+  font-weight: 900;
+  color: rgba(17, 17, 17, 0.55);
+}
+
+.subtitle {
+  margin-top: 8px;
+  color: rgba(17, 17, 17, 0.70);
+  font-size: 14px;
+  font-weight: 800;
+  line-height: 1.4;
+}
+
+/* ─── Divider ─── */
+.separator {
+  height: 1px;
+  background: rgba(0, 0, 0, 0.06);
+  margin: 0;
+}
+
+/* ─── Bottom section (bullets + CTA) ─── */
+.bottomSection {
+  padding: 16px 20px 20px;
+  display: grid;
+  gap: 14px;
+}
+
+.bullets {
+  display: grid;
+  gap: 8px;
+}
+
+.cta {
+  width: 100%;
+  padding: 15px;
+  font-size: 15px;
+  font-weight: 1100;
+  border-radius: 14px;
+  background: #111;
+  color: white;
+  border: none;
+  cursor: pointer;
+  letter-spacing: -0.2px;
+  transition: background 160ms ease, transform 160ms ease, box-shadow 160ms ease;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+}
+
+.cta:hover {
+  background: #222;
+  transform: translateY(-1px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.18);
+}
+
+.cta[data-disabled="true"] {
+  cursor: not-allowed;
+}
+
+.cta[data-primary="true"] {
+  background: #e10600;
+  padding: 17px;
+  font-size: 16px;
+  border-radius: 16px;
+  box-shadow: 0 6px 18px rgba(225, 6, 0, 0.22);
+}
+
+.cta[data-primary="true"]:hover {
+  background: #c70500;
+  box-shadow: 0 10px 28px rgba(225, 6, 0, 0.30);
+}
+
+.delivery {
+  text-align: center;
+  color: rgba(17, 17, 17, 0.50);
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: -0.1px;
+}
+
+.deliveryAccent {
+  color: #e10600;
+  font-weight: 1000;
+}
+
+/* ─── Mobile ─── */
+@media (max-width: 480px) {
+  .topSection {
+    padding: 16px 16px 14px;
+  }
+  .bottomSection {
+    padding: 14px 16px 16px;
+  }
+  .price {
+    font-size: 32px;
+  }
+  .card[data-primary="true"] .price {
+    font-size: 36px;
+  }
+}

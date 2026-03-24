@@ -1,0 +1,297 @@
+.wrap {
+  background: #fff;
+  border-radius: 18px;
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  overflow: hidden;
+  margin-bottom: 14px;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  padding: 16px 18px 0;
+}
+
+.title {
+  font-size: 17px;
+  font-weight: 1200;
+  color: #111;
+  letter-spacing: -0.3px;
+}
+
+.date {
+  font-size: 11px;
+  font-weight: 800;
+  color: rgba(17, 17, 17, 0.40);
+}
+
+.overview {
+  padding: 8px 18px 14px;
+  font-size: 13px;
+  font-weight: 850;
+  color: rgba(17, 17, 17, 0.60);
+  line-height: 1.5;
+}
+
+/* Week tabs */
+.weekTabs {
+  display: flex;
+  gap: 6px;
+  padding: 0 18px 12px;
+  overflow-x: auto;
+}
+
+.weekTab {
+  flex: 0 0 auto;
+  padding: 8px 12px;
+  border-radius: 10px;
+  border: 1.5px solid rgba(0, 0, 0, 0.08);
+  background: #fff;
+  cursor: pointer;
+  text-align: left;
+  transition: border-color 140ms ease, background 140ms ease;
+  font: inherit;
+  color: inherit;
+}
+
+.weekTab:hover {
+  border-color: rgba(0, 0, 0, 0.15);
+}
+
+.weekTab[data-active="true"] {
+  border-color: #e10600;
+  background: rgba(225, 6, 0, 0.04);
+}
+
+.weekTabNum {
+  font-size: 12px;
+  font-weight: 1100;
+  color: #111;
+}
+
+.weekTabTheme {
+  font-size: 10px;
+  font-weight: 800;
+  color: rgba(17, 17, 17, 0.45);
+  max-width: 80px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.weekInfo {
+  padding: 0 18px 12px;
+}
+
+.weekGoals {
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: #fafafa;
+}
+
+.label {
+  font-size: 10px;
+  font-weight: 950;
+  color: rgba(17, 17, 17, 0.40);
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  margin-bottom: 4px;
+}
+
+.goalItem {
+  font-size: 12px;
+  font-weight: 850;
+  color: #444;
+  padding: 2px 0;
+}
+
+/* Days */
+.daysList {
+  padding: 0 12px 12px;
+  display: grid;
+  gap: 6px;
+}
+
+.dayCard {
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.dayHeader {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 12px;
+  width: 100%;
+  border: none;
+  background: none;
+  cursor: pointer;
+  font: inherit;
+  color: inherit;
+  text-align: left;
+}
+
+.dayHeader:hover {
+  background: rgba(0, 0, 0, 0.02);
+}
+
+.dayBadge {
+  padding: 3px 8px;
+  border-radius: 6px;
+  background: #e10600;
+  color: #fff;
+  font-size: 10px;
+  font-weight: 1000;
+  white-space: nowrap;
+}
+
+.dayFocus {
+  flex: 1;
+  font-size: 13px;
+  font-weight: 950;
+  color: #111;
+}
+
+.dayTime {
+  font-size: 11px;
+  font-weight: 800;
+  color: rgba(17, 17, 17, 0.40);
+}
+
+.dayChevron {
+  font-size: 16px;
+  color: rgba(17, 17, 17, 0.30);
+  transition: transform 200ms ease;
+}
+
+.dayChevron[data-open="true"] {
+  transform: rotate(90deg);
+}
+
+/* Day body */
+.dayBody {
+  padding: 0 12px 14px;
+  display: grid;
+  gap: 12px;
+}
+
+.section {
+  display: grid;
+  gap: 6px;
+}
+
+.sectionTitle {
+  font-size: 10px;
+  font-weight: 1000;
+  color: rgba(17, 17, 17, 0.45);
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  padding-bottom: 4px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.miniCard {
+  padding: 8px 10px;
+  border-radius: 8px;
+  background: #fafafa;
+}
+
+.miniName {
+  font-size: 13px;
+  font-weight: 1000;
+  color: #111;
+}
+
+.miniDesc {
+  font-size: 12px;
+  font-weight: 800;
+  color: #555;
+  margin-top: 2px;
+}
+
+.miniReps {
+  font-size: 11px;
+  font-weight: 900;
+  color: #e10600;
+  margin-top: 3px;
+}
+
+/* Drill card */
+.drillCard {
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: #fafafa;
+}
+
+.drillTop {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 8px;
+}
+
+.drillName {
+  font-size: 14px;
+  font-weight: 1100;
+  color: #111;
+}
+
+.drillReps {
+  font-size: 12px;
+  font-weight: 900;
+  color: #e10600;
+  white-space: nowrap;
+}
+
+.drillPurpose {
+  font-size: 12px;
+  font-weight: 800;
+  color: #666;
+  margin-top: 3px;
+}
+
+.drillHow {
+  font-size: 12px;
+  font-weight: 850;
+  color: #333;
+  line-height: 1.5;
+  margin-top: 4px;
+}
+
+.drillGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.cueItem {
+  font-size: 11px;
+  font-weight: 800;
+  color: #555;
+  padding: 1px 0;
+}
+
+.parentItem {
+  font-size: 12px;
+  font-weight: 850;
+  color: #444;
+  padding: 4px 0;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.04);
+}
+
+.parentItem:last-child {
+  border-bottom: none;
+}
+
+.metric {
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: #f0fdf4;
+  border: 1px solid #dcfce7;
+  font-size: 12px;
+  font-weight: 900;
+  color: #166534;
+}

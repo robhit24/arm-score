@@ -1,0 +1,42 @@
+.wrap {
+  display: grid;
+  gap: 8px;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  font-size: 13px;
+  color: #111;
+  font-weight: 950;
+  letter-spacing: -0.2px;
+}
+
+.value {
+  color: #111;
+  font-weight: 1000;
+}
+
+.track {
+  height: 10px;
+  width: 100%;
+  background: rgba(17, 17, 17, 0.10);
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.fill {
+  height: 100%;
+  background: #111;
+  border-radius: 999px;
+  transition: width 450ms ease;
+}
+
+@media (max-width: 480px) {
+  .header {
+    font-size: 14px;
+  }
+  .track {
+    height: 12px;
+  }
+}

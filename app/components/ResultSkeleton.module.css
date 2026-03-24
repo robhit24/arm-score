@@ -1,0 +1,144 @@
+.wrap {
+  text-align: center;
+  max-width: 760px;
+  margin: 0 auto;
+}
+
+.spinnerWrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 24px;
+}
+
+.spinner {
+  width: 36px;
+  height: 36px;
+  border: 3px solid rgba(17, 17, 17, 0.10);
+  border-top-color: #e10600;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.stepText {
+  font-size: 15px;
+  font-weight: 1000;
+  color: #111;
+  letter-spacing: -0.2px;
+}
+
+.scoreCircle {
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  margin: 0 auto 16px;
+}
+
+.labelBar {
+  width: 180px;
+  height: 18px;
+  border-radius: 10px;
+  margin: 0 auto 8px;
+}
+
+.sublabelBar {
+  width: 240px;
+  height: 14px;
+  border-radius: 8px;
+  margin: 0 auto 20px;
+}
+
+.chipsRow {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  flex-wrap: wrap;
+  margin-bottom: 20px;
+}
+
+.chipSkel {
+  width: 160px;
+  height: 30px;
+  border-radius: 999px;
+}
+
+.card {
+  border-radius: 18px;
+  border: 1px solid rgba(17, 17, 17, 0.10);
+  background: rgba(255, 255, 255, 0.96);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.06);
+  padding: 18px;
+  text-align: left;
+  margin-bottom: 14px;
+}
+
+.cardTitle {
+  width: 140px;
+  height: 16px;
+  border-radius: 8px;
+  margin-bottom: 12px;
+}
+
+.barRow {
+  display: grid;
+  gap: 12px;
+}
+
+.barLabel {
+  width: 100px;
+  height: 12px;
+  border-radius: 6px;
+}
+
+.barTrack {
+  height: 10px;
+  width: 100%;
+  border-radius: 999px;
+  margin-top: 6px;
+}
+
+.fixRow {
+  display: grid;
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.fixLine {
+  height: 14px;
+  border-radius: 8px;
+}
+
+/* Shimmer animation */
+.bone {
+  background: linear-gradient(
+    90deg,
+    rgba(17, 17, 17, 0.08) 25%,
+    rgba(17, 17, 17, 0.14) 50%,
+    rgba(17, 17, 17, 0.08) 75%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.4s ease infinite;
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+@media (max-width: 480px) {
+  .scoreCircle {
+    width: 90px;
+    height: 90px;
+  }
+}

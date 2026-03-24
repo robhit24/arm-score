@@ -1,0 +1,827 @@
+"use strict";
+
+const { SESClient, SendRawEmailCommand } = require("@aws-sdk/client-ses");
+const { DynamoDBClient } = require("@aws-sdk/client-dynamodb");
+const {
+  DynamoDBDocumentClient,
+  GetCommand,
+  UpdateCommand,
+} = require("@aws-sdk/lib-dynamodb");
+
+const puppeteer = require("puppeteer-core");
+const chromium = require("@sparticuz/chromium");
+
+// OpenAI package is ESM-first; this works in CommonJS:
+const OpenAI = require("openai").default || require("openai");
+
+const ses = new SESClient({});
+const ddb = DynamoDBDocumentClient.from(new DynamoDBClient({}));
+
+const SWING_TABLE = process.env.SWING_TABLE;
+const JOBS_TABLE = process.env.JOBS_TABLE;
+const SES_FROM = process.env.SES_FROM;
+const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
+
+const BRAND_NAME = process.env.BRAND_NAME || "BatIQ";
+const BRAND_PRIMARY = process.env.BRAND_PRIMARY || "#e10600";
+const BRAND_DARK = process.env.BRAND_DARK || "#111111";
+const REUPLOAD_URL = process.env.REUPLOAD_URL || "https://batiq.ai";
+
+// ---------- helpers ----------
+function escapeHtml(s) {
+  return String(s || "")
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#039;");
+}
+
+function makeBoundary() {
+  return `----=_Part_${Date.now()}_${Math.random().toString(16).slice(2)}`;
+}
+
+function buildRawEmail({ to, subject, text, attachments = [] }) {
+  const b = makeBoundary();
+
+  const parts = [
+    `From: ${SES_FROM}`,
+    `To: ${to}`,
+    `Subject: ${subject}`,
+    `MIME-Version: 1.0`,
+    `Content-Type: multipart/mixed; boundary="${b}"`,
+    ``,
+
+    `--${b}`,
+    `Content-Type: text/plain; charset="utf-8"`,
+    `Content-Transfer-Encoding: 7bit`,
+    ``,
+    text,
+    ``,
+  ];
+
+  for (const att of attachments) {
+    parts.push(
+      `--${b}`,
+      `Content-Type: ${att.contentType}; name="${att.filename}"`,
+      `Content-Disposition: attachment; filename="${att.filename}"`,
+      `Content-Transfer-Encoding: base64`,
+      ``,
+      att.base64,
+      ``
+    );
+  }
+
+  parts.push(`--${b}--`, ``);
+
+  return Buffer.from(parts.join("\n"), "utf8");
+}
+
+async function htmlToPdfBuffer(html) {
+  const browser = await puppeteer.launch({
+    args: chromium.args,
+    defaultViewport: chromium.defaultViewport,
+    executablePath: await chromium.executablePath(),
+    headless: chromium.headless,
+  });
+
+  try {
+    const page = await browser.newPage();
+    await page.setContent(html, { waitUntil: "networkidle0" });
+    const pdf = await page.pdf({ format: "Letter", printBackground: true });
+    return Buffer.from(pdf);
+  } finally {
+    await browser.close();
+  }
+}
+
+function chunkWeeks(planDays) {
+  // 14 => 2w (7/7), 30 => 4w (7/7/7/9), 45 => 6w (7/7/7/7/7/10)
+  if (planDays <= 14) return [7, 7];
+  if (planDays <= 30) return [7, 7, 7, planDays - 21];
+  return [7, 7, 7, 7, 7, planDays - 35];
+}
+
+function expectedWeekCount(planDays) {
+  return chunkWeeks(planDays).length;
+}
+
+function validatePlan(plan, planDays) {
+  const errors = [];
+
+  if (!plan || typeof plan !== "object") errors.push("plan not object");
+
+  const daily = plan?.daily_plan;
+  if (!Array.isArray(daily)) errors.push("daily_plan missing/invalid");
+  else {
+    const days = daily.map((d) => Number(d?.day)).filter((n) => Number.isFinite(n));
+    const unique = new Set(days);
+    if (unique.size !== planDays) errors.push(`daily_plan unique days != ${planDays} (got ${unique.size})`);
+    for (let i = 1; i <= planDays; i++) {
+      if (!unique.has(i)) errors.push(`missing day ${i}`);
+    }
+  }
+
+  const weeks = plan?.weekly_blocks;
+  const wc = expectedWeekCount(planDays);
+  if (!Array.isArray(weeks) || weeks.length < wc) errors.push(`weekly_blocks missing/too short (need >= ${wc})`);
+
+  // minimal required keys
+  if (typeof plan?.title !== "string" || !plan.title.trim()) errors.push("title missing");
+  if (typeof plan?.overview !== "string" || plan.overview.trim().length < 20) errors.push("overview too short/missing");
+  if (typeof plan?.weekly_structure !== "string" || plan.weekly_structure.trim().length < 20)
+    errors.push("weekly_structure too short/missing");
+
+  return { ok: errors.length === 0, errors };
+}
+
+function normalizePlan(plan, planDays) {
+  // Ensure arrays exist and daily is sorted
+  plan.weekly_blocks = Array.isArray(plan.weekly_blocks) ? plan.weekly_blocks : [];
+  plan.daily_plan = Array.isArray(plan.daily_plan) ? plan.daily_plan : [];
+
+  plan.daily_plan = plan.daily_plan
+    .slice()
+    .sort((a, b) => (Number(a?.day) || 0) - (Number(b?.day) || 0));
+
+  // Ensure week numbers exist
+  const weeks = chunkWeeks(planDays);
+  let day = 1;
+  for (let w = 1; w <= weeks.length; w++) {
+    const len = weeks[w - 1];
+    for (let i = 0; i < len; i++) {
+      const item = plan.daily_plan.find((x) => Number(x?.day) === day);
+      if (item && !item.week) item.week = w;
+      day++;
+    }
+  }
+
+  return plan;
+}
+
+function promptForPlan({ planDays, analysis, sport, ageGroup }) {
+  const weekCount = expectedWeekCount(planDays);
+
+  const banned = [
+    "video", "record", "self-assess", "self assess", "submit", "send a video",
+    "coach feedback", "feedback", "upload again", "film yourself"
+  ];
+
+  // Identify weakest area to weight the drill selection
+  const bd = analysis.breakdown || {};
+  const areas = [
+    { name: "timing", score: bd.timing || 70 },
+    { name: "power_transfer", score: bd.power_transfer || 70 },
+    { name: "bat_control", score: bd.bat_control || 70 },
+  ].sort((a, b) => a.score - b.score);
+  const weakest = areas[0].name;
+  const secondWeakest = areas[1].name;
+
+  const safeAge = ageGroup || "12U";
+
+  return `
+You are an elite youth ${sport} hitting development coach designing a ${planDays}-day program.
+
+ATHLETE AGE GROUP: ${safeAge}
+Adapt everything to this age:
+- 8U-10U: Keep sessions 15-20 min. Use fun, game-like drills. Simple cues (1-2 words). No heavy resistance or overload. Parent involvement is critical. Focus on hand-eye coordination and basic rotation.
+- 11U-13U: Sessions 20-25 min. Introduce proper mechanics concepts. Start building muscle memory patterns. Can use light resistance bands. Cues can be more technical but still concise.
+- 14U-16U: Sessions 25-35 min. Full mechanical drills. Overload/underload training appropriate. Can handle complex multi-step cues. Developing power and bat speed.
+- 17U-18U: Sessions 30-40 min. Near-adult programming. Advanced sequencing, game-speed transfer, pressure reps. Full resistance training integration.
+- College/Adult: Full intensity. Advanced periodization. Game-situation specificity. Peak performance focus.
+
+SWING ANALYSIS:
+Score: ${analysis.score} | Label: ${analysis.score_label}
+Timing: ${bd.timing} | Power Transfer: ${bd.power_transfer} | Bat Control: ${bd.bat_control}
+Weakest area: ${weakest} (${areas[0].score}), then ${secondWeakest} (${areas[1].score})
+Top 3 issues:
+1) ${analysis.top3?.[0]}
+2) ${analysis.top3?.[1]}
+3) ${analysis.top3?.[2]}
+Impact: ${analysis.impact_line}
+Uplift: ${analysis.uplift_line}
+
+DRILL LIBRARY — you MUST use drills from this list (mix and vary across days). You may add 3-5 original drills not on this list, but the majority must come from here:
+
+TIMING DRILLS: Walk-up timing drill, Rhythm step-and-swing, Pause-at-load drill, Pitcher tempo matching, Heel-drop trigger drill, Two-count load-to-contact, Slow-pitch timing ladder, Front-foot freeze drill, Tempo tee (3-sec hold), Hip-lead separation drill
+
+POWER TRANSFER DRILLS: Medicine ball rotational throw, Heavy bat underload/overload, Resistance band hip fire, Reverse chain drill (hips-then-hands), Low-to-high barrel path, Connection ball squeeze drill, Back-hip drive off tee, Drop-step power drill, Weighted ball slam rotation, Step-through power swing
+
+BAT CONTROL DRILLS: Inside-pitch tee work, Opposite-field placement drill, Two-strike choke-up swings, High-tee barrel precision, Short-swing flips (compact zone), Knee drill for bat path, Top-hand isolation drill, Bottom-hand isolation drill, Paint-the-corner tee, Contact-point ladder (in/mid/out)
+
+WARMUP OPTIONS: Band pull-aparts, Hip circles, Trunk rotations, Wrist rolls, Arm circles, Lateral lunges, Cat-cow spine, Standing torso twists, Leg swings, Light shadow swings
+
+VARIETY RULES (CRITICAL):
+- NEVER repeat the same drill name on consecutive days
+- Within each week, use at least 6 DIFFERENT drill names across the 7 days
+- Vary warmup exercises — rotate through at least 4 different warmups per week
+- Change rep counts and set structures week to week (e.g., 3x8 -> 4x6 -> 3x10)
+- Each week must introduce at least 2 drills NOT used the previous week
+- Weight drill selection toward ${weakest} (40% of drills), ${secondWeakest} (35%), strongest area (25%)
+
+PROGRESSION ARC (week by week):
+Week 1: Isolation + feel — slow reps, exaggerated positions, building awareness of the ${weakest} issue
+Week 2: Sequencing — connect ${weakest} fix into the full swing chain, tempo work
+${weekCount >= 4 ? `Week 3: Load + intent — increase bat speed, add resistance/overload, challenge timing
+Week 4: Integration — live-speed reps, random pitch locations, game-transfer scenarios` : ""}
+${weekCount >= 6 ? `Week 5: Pressure reps — competitive counts, situational hitting, fatigue sets
+Week 6: Peak + maintain — full-speed game swings, confidence building, review best cues` : ""}
+
+ABSOLUTE RULES:
+- Do NOT mention: ${banned.join(", ")}
+- No video analysis, no self assessment, no coach feedback references
+- This must read like an elite development plan
+- Every day must feel DIFFERENT from the day before
+
+OUTPUT: Return STRICT JSON ONLY with exactly these keys:
+{
+  "title": "string",
+  "overview": "string (3-6 confident sentences referencing the athlete's specific weaknesses)",
+  "weekly_structure": "string (describe what changes each week and WHY)",
+  "weekly_blocks": [
+    { "week": 1, "theme": "string", "goals": ["...","...","..."], "focus_points": ["...","...","..."] }
+  ],
+  "daily_plan": [
+    {
+      "day": 1,
+      "week": 1,
+      "session_time_min": 25,
+      "focus": "string (specific to that day, not generic)",
+      "warmup": [
+        { "name":"string", "description":"string", "reps":"string" }
+      ],
+      "drills": [
+        {
+          "name": "string (from the drill library or clearly original)",
+          "purpose": "string (tie to athlete's specific weakness)",
+          "how_to": "string (2-4 sentences, step-by-step with body positions)",
+          "reps": "string (specific — e.g. '3 sets x 8 reps' not just 'repeat')",
+          "cues": ["...","...","..."],
+          "common_mistakes": ["...","..."]
+        }
+      ],
+      "parent_help": [
+        "string (specific observation or action for that day's drills)",
+        "string"
+      ],
+      "success_metric": "string (observable outcome — e.g. 'barrel stays in zone for 3+ consecutive reps')"
+    }
+  ],
+  "equipment_notes": ["...","..."],
+  "safety_notes": ["...","..."]
+}
+
+CONSTRAINTS:
+- weekly_blocks: exactly ${weekCount} weeks (1..${weekCount})
+- daily_plan: EVERY day 1..${planDays}, no gaps
+- Each day: 1-2 warmup exercises + exactly 3 drills
+- Keep JSON valid. No markdown. No extra keys.
+`;
+}
+
+function promptRepair({ planDays, sport, analysis, previousRaw, errors }) {
+  const weekCount = expectedWeekCount(planDays);
+  return `
+You previously returned invalid JSON or an incomplete plan. Fix it.
+
+Requirements:
+- Return STRICT JSON ONLY with the exact required keys.
+- weekly_blocks must have exactly ${weekCount} weeks (1..${weekCount}).
+- daily_plan must contain EVERY day 1..${planDays} with no gaps.
+
+Common errors to fix:
+${errors.map((e) => "- " + e).join("\n")}
+
+Use this analysis context:
+Score: ${analysis.score}
+Top3: ${JSON.stringify(analysis.top3 || [])}
+Sport: ${sport}
+
+Here is your previous output (for reference, do not include it in final answer):
+${previousRaw}
+
+Now return the corrected JSON only.
+`;
+}
+
+async function generateValidPlan({ openai, planDays, analysis }) {
+  const sport = analysis.sport || "baseball";
+  const ageGroup = analysis.age_group || "12U";
+
+  let lastRaw = "";
+  let lastErrs = [];
+
+  for (let attempt = 1; attempt <= 3; attempt++) {
+    const isRepair = attempt > 1;
+    const prompt = isRepair
+      ? promptRepair({ planDays, sport, analysis, previousRaw: lastRaw, errors: lastErrs })
+      : promptForPlan({ planDays, analysis, sport, ageGroup });
+
+    const resp = await openai.chat.completions.create({
+      model: "gpt-4o",
+      temperature: isRepair ? 0.25 : 0.35,
+      response_format: { type: "json_object" },
+      messages: [{ role: "user", content: prompt }],
+    });
+
+    const raw = resp.choices?.[0]?.message?.content || "{}";
+    lastRaw = raw;
+
+    let plan;
+    try {
+      plan = JSON.parse(raw);
+    } catch (e) {
+      lastErrs = ["JSON.parse failed"];
+      continue;
+    }
+
+    const v = validatePlan(plan, planDays);
+    if (v.ok) return normalizePlan(plan, planDays);
+
+    lastErrs = v.errors;
+  }
+
+  // if still failing, throw with raw included for debugging
+  const err = new Error("Plan generation failed validation after retries");
+  err.raw = lastRaw;
+  err.errors = lastErrs;
+  throw err;
+}
+
+function weeklyBlocksHtml(plan) {
+  const blocks = plan.weekly_blocks || [];
+  return blocks
+    .map(
+      (w) => `
+      <div class="wkCard">
+        <div class="wkTitle">Week ${escapeHtml(w.week)} - ${escapeHtml(w.theme)}</div>
+        <div class="wkCols">
+          <div>
+            <div class="label">Goals</div>
+            <ul>${(w.goals || []).map((g) => `<li>${escapeHtml(g)}</li>`).join("")}</ul>
+          </div>
+          <div>
+            <div class="label">Focus Points</div>
+            <ul>${(w.focus_points || []).map((f) => `<li>${escapeHtml(f)}</li>`).join("")}</ul>
+          </div>
+        </div>
+      </div>
+    `
+    )
+    .join("");
+}
+
+function dayCardHtml(d) {
+  const warm = (d.warmup || [])
+    .map(
+      (w) => `
+      <div class="mini">
+        <div class="miniTitle">${escapeHtml(w.name)}</div>
+        <div class="miniText">${escapeHtml(w.description)}</div>
+        <div class="miniMeta">${escapeHtml(w.reps)}</div>
+      </div>`
+    )
+    .join("");
+
+  const drills = (d.drills || [])
+    .map((dr) => {
+      const cues = (dr.cues || []).map((c) => `<li>${escapeHtml(c)}</li>`).join("");
+      const mistakes = (dr.common_mistakes || []).map((m) => `<li>${escapeHtml(m)}</li>`).join("");
+      return `
+        <div class="drill">
+          <div class="drillHead">
+            <div class="drillName">${escapeHtml(dr.name)}</div>
+            <div class="drillReps">${escapeHtml(dr.reps)}</div>
+          </div>
+          <div class="drillPurpose">${escapeHtml(dr.purpose)}</div>
+          <div class="drillHow">${escapeHtml(dr.how_to)}</div>
+          <div class="drillGrid">
+            <div>
+              <div class="label">Cues</div>
+              <ul>${cues}</ul>
+            </div>
+            <div>
+              <div class="label">Watch for</div>
+              <ul>${mistakes}</ul>
+            </div>
+          </div>
+        </div>
+      `;
+    })
+    .join("");
+
+  const parent = (d.parent_help || []).map((p) => `<li>${escapeHtml(p)}</li>`).join("");
+
+  return `
+    <div class="dayCard">
+      <div class="dayTop">
+        <div class="dayBadge">Day ${escapeHtml(d.day)}</div>
+        <div class="dayFocus">${escapeHtml(d.focus)}</div>
+        <div class="dayTime">${escapeHtml(d.session_time_min)} min</div>
+      </div>
+
+      <div class="dayBody">
+        <div class="box">
+          <div class="boxTitle">Warm-up</div>
+          ${warm || `<div class="miniText">Light warm-up + movement prep.</div>`}
+        </div>
+
+        <div class="box">
+          <div class="boxTitle">Drills</div>
+          ${drills}
+        </div>
+
+        <div class="box">
+          <div class="boxTitle">Parent / Coach Notes</div>
+          <ul class="parentList">${parent}</ul>
+          <div class="metric">${escapeHtml(d.success_metric)}</div>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function planToHtml({ email, planDays, analysis, plan }) {
+  const top3 = (analysis.top3 || []).map((x, i) => `<li><span class="fixNum">${i + 1}</span> ${escapeHtml(x)}</li>`).join("");
+  const equip = (plan.equipment_notes || []).map((x) => `<li>${escapeHtml(x)}</li>`).join("");
+  const safety = (plan.safety_notes || []).map((x) => `<li>${escapeHtml(x)}</li>`).join("");
+
+  const scoreColor = (analysis.score || 0) >= 85 ? "#16a34a" : (analysis.score || 0) >= 70 ? "#f59e0b" : "#dc2626";
+
+  const byWeek = new Map();
+  for (const d of plan.daily_plan || []) {
+    const w = Number(d.week) || 1;
+    if (!byWeek.has(w)) byWeek.set(w, []);
+    byWeek.get(w).push(d);
+  }
+
+  const weeksOrdered = Array.from(byWeek.keys()).sort((a, b) => a - b);
+
+  const weeklyPages = weeksOrdered
+    .map((w, idx) => {
+      const days = byWeek.get(w) || [];
+      const block = (plan.weekly_blocks || []).find(x => Number(x.week) === w);
+
+      return `
+        <div class="pageBreak ${idx === 0 ? "firstBreak" : ""}"></div>
+        <div class="weekStart">
+          <div class="weekBanner">
+            <div class="weekBannerInner">
+              <div class="weekBannerNum">Week ${w}</div>
+              <div class="weekBannerTheme">${escapeHtml(block?.theme || "")}</div>
+            </div>
+          </div>
+          ${days.length > 0 ? dayCardHtml(days[0]) : ""}
+        </div>
+        ${days.slice(1).map(dayCardHtml).join("")}
+      `;
+    })
+    .join("");
+
+  return `
+  <html>
+    <head>
+      <meta charset="utf-8" />
+      <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+          font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+          color: #1a1a1a;
+          background: #fff;
+          font-size: 13px;
+          line-height: 1.5;
+        }
+        .wrap { padding: 32px; max-width: 800px; margin: 0 auto; }
+
+        /* ── Cover ── */
+        .coverBar { height: 4px; background: ${BRAND_PRIMARY}; border-radius: 0 0 2px 2px; }
+        .coverHeader { display: flex; align-items: center; gap: 10px; margin: 20px 0 4px; }
+        .brandDot { width: 10px; height: 10px; border-radius: 3px; background: ${BRAND_PRIMARY}; }
+        .brandText { font-size: 13px; font-weight: 800; color: #1a1a1a; letter-spacing: -0.2px; }
+        h1 { font-size: 26px; font-weight: 900; letter-spacing: -0.8px; color: #111; line-height: 1.15; margin-bottom: 4px; }
+        .coverSub { color: #888; font-size: 11px; margin-bottom: 20px; }
+
+        /* ── Score card ── */
+        .scoreCard { display: flex; gap: 24px; padding: 20px; border-radius: 16px; background: #fafafa; margin-bottom: 16px; }
+        .scoreLeft { text-align: center; min-width: 100px; }
+        .scoreNum { font-size: 56px; font-weight: 900; line-height: 1; letter-spacing: -2px; }
+        .scoreLabelSmall { font-size: 11px; color: #888; font-weight: 700; margin-top: 2px; text-transform: uppercase; letter-spacing: 0.3px; }
+        .scorePill { display: inline-block; padding: 4px 10px; border-radius: 999px; background: #f0f0f0; font-size: 11px; font-weight: 800; color: #555; margin-top: 6px; }
+        .scoreRight { flex: 1; }
+        .breakdownGrid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 14px; }
+        .bdItem { text-align: center; padding: 10px 6px; border-radius: 10px; background: #fff; border: 1px solid #eee; }
+        .bdLabel { font-size: 10px; color: #888; font-weight: 700; text-transform: uppercase; letter-spacing: 0.3px; margin-bottom: 2px; }
+        .bdVal { font-size: 22px; font-weight: 900; color: #111; }
+        .fixList { list-style: none; margin: 0; padding: 0; }
+        .fixList li { padding: 6px 0; border-bottom: 1px solid #f0f0f0; font-size: 12px; font-weight: 700; color: #333; display: flex; align-items: baseline; gap: 8px; }
+        .fixList li:last-child { border-bottom: none; }
+        .fixNum { display: inline-flex; align-items: center; justify-content: center; width: 18px; height: 18px; border-radius: 50%; background: #111; color: #fff; font-size: 10px; font-weight: 900; flex-shrink: 0; }
+
+        /* ── Overview ── */
+        .overviewCard { padding: 20px; border-radius: 16px; border: 1px solid #eee; margin-bottom: 16px; }
+        .overviewTitle { font-size: 16px; font-weight: 900; color: #111; margin-bottom: 8px; letter-spacing: -0.3px; }
+        .overviewText { color: #444; font-size: 13px; line-height: 1.6; }
+        .structureLabel { font-size: 10px; color: #888; font-weight: 700; text-transform: uppercase; letter-spacing: 0.3px; margin: 12px 0 4px; }
+
+        /* ── Week blocks ── */
+        .wkCard { border: 1px solid #eee; border-radius: 12px; padding: 14px; margin-top: 10px; }
+        .wkTitle { font-weight: 900; font-size: 13px; color: #111; margin-bottom: 8px; }
+        .wkCols { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+        .wkCols .label { font-size: 10px; color: #888; font-weight: 700; text-transform: uppercase; letter-spacing: 0.3px; margin-bottom: 4px; }
+        .wkCols ul { margin: 0 0 0 16px; font-size: 12px; color: #444; }
+        .wkCols li { margin-bottom: 3px; }
+
+        /* ── Notes grid ── */
+        .notesGrid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 14px; }
+        .noteBox { padding: 14px; border-radius: 12px; background: #fafafa; }
+        .noteBox .label { font-size: 10px; color: #888; font-weight: 700; text-transform: uppercase; letter-spacing: 0.3px; margin-bottom: 6px; }
+        .noteBox ul { margin: 0 0 0 16px; font-size: 12px; color: #444; }
+        .noteBox li { margin-bottom: 3px; }
+
+        /* ── Week banner ── */
+        .pageBreak { page-break-before: always; height: 1px; }
+        .firstBreak { page-break-before: auto; }
+        .weekStart { page-break-inside: avoid; }
+        .weekBanner { margin: 8px 0 16px; padding: 16px 20px; border-radius: 14px; background: #111; color: #fff; page-break-after: avoid; }
+        .weekBannerInner { display: flex; align-items: baseline; gap: 12px; }
+        .weekBannerNum { font-size: 18px; font-weight: 900; letter-spacing: -0.3px; }
+        .weekBannerTheme { font-size: 13px; font-weight: 700; opacity: 0.7; }
+
+        /* ── Day cards ── */
+        .dayCard { border: 1px solid #eee; border-radius: 14px; margin: 10px 0; overflow: hidden; page-break-inside: avoid; }
+        .dayTop { display: flex; align-items: center; gap: 10px; padding: 12px 16px; background: #fafafa; border-bottom: 1px solid #eee; }
+        .dayBadge { display: inline-flex; align-items: center; justify-content: center; padding: 3px 10px; border-radius: 8px; background: ${BRAND_PRIMARY}; color: #fff; font-size: 11px; font-weight: 900; }
+        .dayFocus { font-weight: 800; color: #111; flex: 1; font-size: 13px; }
+        .dayTime { color: #888; font-size: 11px; font-weight: 700; white-space: nowrap; }
+        .dayBody { padding: 14px 16px; }
+
+        .box { margin-bottom: 14px; }
+        .box:last-child { margin-bottom: 0; }
+        .boxTitle { font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px; color: #888; margin-bottom: 8px; padding-bottom: 4px; border-bottom: 1px solid #f0f0f0; }
+
+        .mini { padding: 8px 10px; border-radius: 8px; background: #f8f8f8; margin-bottom: 6px; }
+        .miniTitle { font-weight: 800; font-size: 12px; color: #111; }
+        .miniText { color: #555; margin-top: 2px; font-size: 12px; }
+        .miniMeta { color: #888; font-size: 11px; margin-top: 3px; font-weight: 700; }
+
+        .drill { padding: 10px 12px; border-radius: 10px; background: #f8f8f8; margin-bottom: 8px; }
+        .drillHead { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; margin-bottom: 4px; }
+        .drillName { font-weight: 900; font-size: 13px; color: #111; }
+        .drillReps { color: ${BRAND_PRIMARY}; font-size: 11px; font-weight: 800; white-space: nowrap; }
+        .drillPurpose { color: #555; font-size: 12px; margin-bottom: 3px; }
+        .drillHow { color: #333; font-size: 12px; line-height: 1.5; margin-bottom: 6px; }
+        .drillGrid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+        .drillGrid .label { font-size: 10px; color: #888; font-weight: 700; text-transform: uppercase; letter-spacing: 0.3px; margin-bottom: 3px; }
+        .drillGrid ul { margin: 0 0 0 14px; font-size: 11px; color: #555; }
+        .drillGrid li { margin-bottom: 2px; }
+
+        .parentList { list-style: none; margin: 0; padding: 0; }
+        .parentList li { padding: 4px 0; font-size: 12px; color: #444; border-bottom: 1px solid #f5f5f5; }
+        .parentList li:last-child { border-bottom: none; }
+        .metric { margin-top: 8px; padding: 8px 10px; border-radius: 8px; background: #f0fdf4; border: 1px solid #dcfce7; font-size: 12px; font-weight: 700; color: #166534; }
+
+        .footer { margin-top: 20px; padding-top: 12px; border-top: 1px solid #eee; color: #aaa; font-size: 10px; text-align: center; }
+        .label { color: #888; font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.3px; }
+        ol { margin: 8px 0 0 18px; }
+        ul { margin: 6px 0 0 16px; }
+        @page { margin: 14mm; }
+      </style>
+    </head>
+    <body>
+      <div class="wrap">
+        <div class="coverBar"></div>
+        <div class="coverHeader">
+          <div class="brandDot"></div>
+          <div class="brandText">${escapeHtml(BRAND_NAME)}</div>
+        </div>
+        <h1>Custom ${escapeHtml(planDays)}-Day Swing Program</h1>
+        <div class="coverSub">Prepared for ${escapeHtml(email)} · Based on your swing analysis</div>
+
+        <!-- Score card -->
+        <div class="scoreCard">
+          <div class="scoreLeft">
+            <div class="scoreNum" style="color:${scoreColor}">${escapeHtml(analysis.score)}</div>
+            <div class="scoreLabelSmall">Swing Score</div>
+            <div class="scorePill">${escapeHtml(analysis.score_label)}</div>
+          </div>
+          <div class="scoreRight">
+            <div class="breakdownGrid">
+              <div class="bdItem">
+                <div class="bdLabel">Timing</div>
+                <div class="bdVal">${escapeHtml(analysis.breakdown?.timing)}</div>
+              </div>
+              <div class="bdItem">
+                <div class="bdLabel">Power</div>
+                <div class="bdVal">${escapeHtml(analysis.breakdown?.power_transfer)}</div>
+              </div>
+              <div class="bdItem">
+                <div class="bdLabel">Bat Ctrl</div>
+                <div class="bdVal">${escapeHtml(analysis.breakdown?.bat_control)}</div>
+              </div>
+            </div>
+            <ol class="fixList">${top3}</ol>
+          </div>
+        </div>
+
+        <!-- Overview -->
+        <div class="overviewCard">
+          <div class="overviewTitle">${escapeHtml(plan.title || "Program Overview")}</div>
+          <div class="overviewText">${escapeHtml(plan.overview || "")}</div>
+          <div class="structureLabel">Weekly progression</div>
+          <div class="overviewText">${escapeHtml(plan.weekly_structure || "")}</div>
+
+          ${weeklyBlocksHtml(plan)}
+
+          <div class="notesGrid">
+            <div class="noteBox">
+              <div class="label">Equipment</div>
+              <ul>${equip}</ul>
+            </div>
+            <div class="noteBox">
+              <div class="label">Safety</div>
+              <ul>${safety}</ul>
+            </div>
+          </div>
+        </div>
+
+        ${weeklyPages}
+
+        <div class="footer">
+          ${escapeHtml(BRAND_NAME)} · Custom swing development program · For skill development, not medical advice
+        </div>
+      </div>
+    </body>
+  </html>
+  `;
+}
+
+async function setJobStatus(job_id, status, extra = {}) {
+  const names = { "#s": "status" };
+  const values = { ":s": status, ":t": new Date().toISOString() };
+  let update = "SET #s = :s, updated_at = :t";
+
+  for (const [k, v] of Object.entries(extra)) {
+    const nk = `#${k}`;
+    const vk = `:${k}`;
+    names[nk] = k;
+    values[vk] = v;
+    update += `, ${nk} = ${vk}`;
+  }
+
+  await ddb.send(
+    new UpdateCommand({
+      TableName: JOBS_TABLE,
+      Key: { job_id },
+      UpdateExpression: update,
+      ExpressionAttributeNames: names,
+      ExpressionAttributeValues: values,
+    })
+  );
+}
+
+// ---------- main handler ----------
+module.exports.handler = async (event) => {
+  const { job_id } = event;
+
+  if (!SWING_TABLE || !JOBS_TABLE || !SES_FROM || !OPENAI_API_KEY) {
+    throw new Error("Missing env vars SWING_TABLE/JOBS_TABLE/SES_FROM/OPENAI_API_KEY");
+  }
+
+  // Load job
+  const jobRes = await ddb.send(new GetCommand({ TableName: JOBS_TABLE, Key: { job_id } }));
+  const job = jobRes.Item;
+  if (!job) return;
+
+  // If already sent, stop
+  if (job.status === "sent") {
+    console.log("Already sent:", job_id);
+    return;
+  }
+
+  // Acquire lock: set status=processing only if not processing/sent
+  try {
+    await ddb.send(
+      new UpdateCommand({
+        TableName: JOBS_TABLE,
+        Key: { job_id },
+        UpdateExpression: "SET #s = :processing, processing_started_at = :t",
+        ConditionExpression: "attribute_not_exists(#s) OR (#s <> :sent AND #s <> :processing)",
+        ExpressionAttributeNames: { "#s": "status" },
+        ExpressionAttributeValues: {
+          ":processing": "processing",
+          ":sent": "sent",
+          ":t": new Date().toISOString(),
+        },
+      })
+    );
+  } catch (e) {
+    console.log("Lock not acquired (already processing/sent):", job_id);
+    return;
+  }
+
+  try {
+    console.log("DEBUG_TABLE_REGION", {
+      SWING_TABLE,
+      JOBS_TABLE,
+      swing_id: job.swing_id,
+      plan_days: job.plan_days,
+      email: job.email,
+    });
+
+    // Load analysis
+    const analysisRes = await ddb.send(
+      new GetCommand({ TableName: SWING_TABLE, Key: { swing_id: job.swing_id } })
+    );
+    const analysis = analysisRes.Item;
+
+    // Missing analysis: graceful email + status
+    if (!analysis) {
+      const subject = `Action needed: upload your swing to generate your ${job.plan_days}-day program`;
+      const text =
+        `We received your purchase, but we cannot find the swing upload linked to your order.\n\n` +
+        `Please upload your swing here: ${REUPLOAD_URL}\n\n` +
+        `Order: ${job.order_id || ""}\n` +
+        `If you reply to this email with your swing video, we will generate it manually.\n`;
+
+      const rawEmail = buildRawEmail({
+        to: job.email,
+        subject,
+        text,
+        attachments: [],
+      });
+
+      const sesResp = await ses.send(new SendRawEmailCommand({ RawMessage: { Data: rawEmail } }));
+      await setJobStatus(job_id, "needs_swing", {
+        error_message: "Missing swing analysis record",
+        ses_message_id: sesResp?.MessageId || "unknown",
+        failed_at: new Date().toISOString(),
+      });
+
+      console.log("Missing analysis - sent needs_swing email:", job_id);
+      return;
+    }
+
+    const openai = new OpenAI({ apiKey: OPENAI_API_KEY });
+
+    // Generate VALID plan (with retries)
+    const planDays = Number(job.plan_days) || 14;
+    const plan = await generateValidPlan({ openai, planDays, analysis });
+
+    // Build PDF
+    const html = planToHtml({
+      email: job.email,
+      planDays,
+      analysis,
+      plan,
+    });
+
+    const pdfBuffer = await htmlToPdfBuffer(html);
+    const filename = `${BRAND_NAME}-Custom-${planDays}-Day-Swing-Program.pdf`.replace(/\s+/g, "-");
+
+    const subject = `Your Custom ${planDays}-Day Swing Fix Program (PDF)`;
+    const text = `Attached is your custom ${planDays}-day program based on your swing analysis.`;
+
+    const rawEmail = buildRawEmail({
+      to: job.email,
+      subject,
+      text,
+      attachments: [
+        {
+          filename,
+          contentType: "application/pdf",
+          base64: pdfBuffer.toString("base64"),
+        },
+      ],
+    });
+
+    const sesResp = await ses.send(new SendRawEmailCommand({ RawMessage: { Data: rawEmail } }));
+
+    await setJobStatus(job_id, "sent", {
+      sent_at: new Date().toISOString(),
+      ses_message_id: sesResp?.MessageId || "unknown",
+      plan_json: JSON.stringify(plan),
+      plan_days_generated: planDays,
+    });
+
+    console.log("Sent PDF email + stored plan JSON:", job_id);
+  } catch (err) {
+    console.error("Job failed:", job_id, err);
+
+    // log raw if present
+    if (err && err.raw) {
+      console.log("PLAN_RAW_OUTPUT_START");
+      console.log(err.raw);
+      console.log("PLAN_RAW_OUTPUT_END");
+    }
+    if (err && err.errors) {
+      console.log("PLAN_VALIDATION_ERRORS:", err.errors);
+    }
+
+    await setJobStatus(job_id, "failed", {
+      failed_at: new Date().toISOString(),
+      error_message: (err && err.message) ? err.message.slice(0, 900) : String(err).slice(0, 900),
+    });
+
+    throw err;
+  }
+};

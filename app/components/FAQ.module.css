@@ -1,0 +1,50 @@
+.card {
+  display: block;
+  width: 100%;
+  padding: 14px;
+  border-radius: 16px;
+  background: rgba(17, 17, 17, 0.03);
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  cursor: pointer;
+  text-align: left;
+  transition: background 140ms ease;
+  font: inherit;
+  color: inherit;
+}
+
+.card:hover {
+  background: rgba(17, 17, 17, 0.06);
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+}
+
+.question {
+  font-weight: 1100;
+  color: #111;
+  letter-spacing: -0.2px;
+}
+
+.chevron {
+  font-size: 18px;
+  font-weight: 1000;
+  color: rgba(17, 17, 17, 0.5);
+  transition: transform 200ms ease;
+  transform: rotate(0deg);
+  flex: 0 0 auto;
+}
+
+.chevron[data-open="true"] {
+  transform: rotate(90deg);
+}
+
+.answer {
+  margin-top: 8px;
+  color: rgba(17, 17, 17, 0.78);
+  font-weight: 850;
+  line-height: 1.45;
+}
