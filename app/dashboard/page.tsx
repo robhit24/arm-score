@@ -338,7 +338,7 @@ export default function Dashboard() {
         {latest && (
           <div className={s.latestCard}>
             <div className={s.latestHeader}>
-              <div className={s.latestTitle}>Latest Swing</div>
+              <div className={s.latestTitle}>Latest Pitch</div>
               <div className={s.latestDate}>
                 {new Date(latest.created_at).toLocaleDateString()}
               </div>
@@ -447,7 +447,7 @@ export default function Dashboard() {
         {swings.length > 1 && (
           <div className={s.historySection}>
             <div className={s.historyHeader}>
-              <div className={s.historyTitle}>Recent Swings</div>
+              <div className={s.historyTitle}>Recent Pitches</div>
               <div className={s.historyCount}>{swings.length} total</div>
             </div>
             {swings.slice(0, 10).map((sw) => (
@@ -475,12 +475,12 @@ export default function Dashboard() {
         {/* Empty state */}
         {swings.length === 0 && (
           <div className={s.empty}>
-            <div className={s.emptyTitle}>No swings yet</div>
+            <div className={s.emptyTitle}>No pitches yet</div>
             <div className={s.emptySub}>
               Upload your first swing to start tracking your progress.
             </div>
             <a href="/" className={s.analyzeBtn}>
-              Analyze Your First Swing →
+              Analyze Your First Pitch →
             </a>
           </div>
         )}

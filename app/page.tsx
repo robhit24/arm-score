@@ -471,7 +471,7 @@ export default function Page() {
               Custom pitching program delivered in 2 hours.
             </p>
             <div className={s.proofRow}>
-              <span className={s.proofItem}>1,000+ swings analyzed</span>
+              <span className={s.proofItem}>1,000+ pitchers analyzed</span>
               <span className={s.proofDivider} />
               <span className={s.proofItem}>Built from your frames</span>
             </div>
@@ -531,7 +531,7 @@ export default function Page() {
                     </div>
 
                     <div className={s.fieldWrap}>
-                      <span className={s.fieldLabel}>Swing video</span>
+                      <span className={s.fieldLabel}>Pitching video</span>
 
                       {/* Video requirements — always visible */}
                       <div className={s.videoReqs}>
@@ -732,7 +732,7 @@ export default function Page() {
 
                 <div className={s.offersHeader}>
                   <div className={s.offersTitle}>
-                    Fix your {result.score < 70 ? result.score < 55 ? "swing" : "mechanics" : "timing"} — pick your plan
+                    Fix your mechanics — pick your plan
                   </div>
                   <div className={s.offersSubtitle}>
                     Custom-built from your {result.score} score. Delivered in{" "}
@@ -758,7 +758,7 @@ export default function Page() {
                     </div>
                   </div>
                   <div className={s.subBullets}>
-                    <div className={s.subBullet}>✅ Unlimited swing analyses</div>
+                    <div className={s.subBullet}>✅ Unlimited pitch analyses</div>
                     <div className={s.subBullet}>✅ Score tracking + progress chart</div>
                     <div className={s.subBullet}>✅ Monthly updated training plan</div>
                     <div className={s.subBullet}>✅ Unlimited ArmIQ AI chat</div>
@@ -804,7 +804,7 @@ export default function Page() {
                     perDay={perDay30}
                     badge="Most Popular • Best Value"
                     badgeTone="red"
-                    subtitle="Best balance of speed + lasting swing changes."
+                    subtitle="Best balance of speed + lasting delivery changes."
                     bullets={[
                       bestValueLine,
                       "Fix mechanics + build repeatable timing",
