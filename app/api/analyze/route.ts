@@ -28,21 +28,6 @@ export async function POST(req: Request) {
       return new Response("Need frames[] (>=3)", { status: 400 });
     }
 
-    // Server-side dedup: skip for subscribers (force_fresh)
-    if (frame_hash && typeof frame_hash === "string" && !force_fresh) {
-      try {
-        const checkUrl = `https://8156f6tuae.execute-api.us-east-2.amazonaws.com/live/store-analysis?frame_hash=${encodeURIComponent(frame_hash)}`;
-        const checkRes = await fetch(checkUrl);
-        if (checkRes.ok) {
-          const cached = await checkRes.json();
-          if (cached.found && cached.analysis) {
-            return Response.json(cached.analysis);
-          }
-        }
-      } catch (e) {
-        console.log("Dedup check failed, proceeding:", e);
-      }
-    }
 
     const prompt = `You are an elite baseball/softball pitching mechanics analyst. You are looking at 4 frames extracted from a pitching video (roughly: wind-up/set, leg lift/balance, arm cocking/stride, release/follow-through).
 
@@ -91,6 +76,13 @@ IMPORTANT RULES:
   - Elite/near-perfect = 88-100
 - Do NOT cluster everything in the 60-80 range. Sugar-coating helps no one.
 
+CONSISTENCY RULES (critical):
+- Base scores strictly on visible mechanics in the frames, not assumptions
+- Score the SAME way every time: identical frames should produce scores within 2-3 points of each other
+- Each category score must be independently justified by what you see
+- Do NOT randomize scores. If the elbow drops below slot, that's a 50-65 arm path score every time
+- top3 issues should reference the same mechanical problems if the same problems are visible
+
 Return STRICT JSON:
 {
   "timing": int 0-100,
@@ -111,7 +103,7 @@ IMPORTANT: Map the scores as:
 
     const completion = await client.chat.completions.create({
       model: "gpt-4o",
-      temperature: 0.3,
+      temperature: 0.15,
       response_format: { type: "json_object" },
       messages: [
         {
