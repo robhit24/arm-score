@@ -5,6 +5,7 @@ import { extractFrames } from "../lib/extract-frames";
 import s from "./dashboard.module.css";
 import { PlanViewer } from "./PlanViewer";
 import { Leaderboard } from "./Leaderboard";
+import { DashboardChat } from "./DashboardChat";
 
 type Swing = {
   swing_id: string;
@@ -313,6 +314,16 @@ export default function Dashboard() {
             plan={plans[0].plan}
             planDays={plans[0].plan_days}
             sentAt={plans[0].sent_at}
+          />
+        )}
+
+        {/* Coach chat */}
+        {latest && (
+          <DashboardChat
+            email={user.email || ""}
+            latestScore={latest.score}
+            breakdown={latest.breakdown}
+            top3={latest.top3}
           />
         )}
 
