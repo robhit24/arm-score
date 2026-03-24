@@ -63,6 +63,7 @@
 
 .subWelcomeBtn {
   display: block;
+  width: 100%;
   padding: 14px;
   border-radius: 14px;
   background: #e10600;
@@ -70,6 +71,9 @@
   font-size: 16px;
   font-weight: 1100;
   text-decoration: none;
+  text-align: center;
+  border: none;
+  cursor: pointer;
   margin-bottom: 10px;
   transition: background 140ms ease;
 }
