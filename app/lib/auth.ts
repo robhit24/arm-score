@@ -1,7 +1,7 @@
 import { cookies } from "next/headers";
 
-const SESSION_COOKIE = "batiq_session";
-const SESSION_SECRET = process.env.SESSION_SECRET || "batiq-default-secret-change-me";
+const SESSION_COOKIE = "armiq_session";
+const SESSION_SECRET = process.env.SESSION_SECRET || "armiq-default-secret-change-me";
 
 export function encodeSession(email: string): string {
   // Simple base64 token: email + timestamp + secret hash

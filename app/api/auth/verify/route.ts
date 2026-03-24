@@ -58,7 +58,7 @@ export async function GET(req: Request) {
     const sessionToken = encodeSession(user.email);
     const cookieStore = await cookies();
     cookieStore.set({
-      name: "batiq_session",
+      name: "armiq_session",
       value: sessionToken,
       httpOnly: true,
       secure: true,
