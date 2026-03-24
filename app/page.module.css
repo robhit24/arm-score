@@ -1131,6 +1131,36 @@
   cursor: pointer;
 }
 
+/* Cross-promo */
+.crossPromo {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 12px;
+  margin-top: 14px;
+  border-radius: 14px;
+  background: rgba(17, 17, 17, 0.03);
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  font-size: 13px;
+  font-weight: 900;
+  color: rgba(17, 17, 17, 0.55);
+  text-decoration: none;
+  transition: background 140ms ease, color 140ms ease;
+  max-width: 980px;
+  width: 100%;
+}
+
+.crossPromo:hover {
+  background: rgba(17, 17, 17, 0.06);
+  color: #111;
+}
+
+.crossPromoLink {
+  color: #e10600;
+  font-weight: 1100;
+}
+
 /* ─── MOBILE ─── */
 @media (max-width: 480px) {
   .main {

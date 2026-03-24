@@ -962,6 +962,11 @@ export default function Page() {
           Get Custom Plan ↓
         </button>
       )}
+      {/* Cross-promo */}
+      <a href="https://batiq.ai" target="_blank" rel="noreferrer" className={s.crossPromo}>
+        <span>🏏 Also a hitter?</span>
+        <span className={s.crossPromoLink}>Check out BatIQ →</span>
+      </a>
     </main>
   );
 }
