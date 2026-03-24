@@ -11,10 +11,12 @@ export function SwingChat({ result }: { result: Result }) {
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
   const [open, setOpen] = useState(false);
-  const bottomRef = useRef<HTMLDivElement>(null);
+  const messagesRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    bottomRef.current?.scrollIntoView({ behavior: "smooth" });
+    if (messagesRef.current) {
+      messagesRef.current.scrollTop = messagesRef.current.scrollHeight;
+    }
   }, [messages]);
 
   async function send() {
@@ -52,7 +54,7 @@ export function SwingChat({ result }: { result: Result }) {
           <span className={s.promptIcon}>🤖</span>
           <span className={s.promptText}>
             <span className={s.promptTitle}>Have a question about your score?</span>
-            <span className={s.promptSub}>Ask ArmIQ AI</span>
+            <span className={s.promptSub}>Ask BatIQ AI</span>
           </span>
           <span className={s.promptArrow}>→</span>
         </button>
@@ -65,15 +67,15 @@ export function SwingChat({ result }: { result: Result }) {
       <div className={s.header}>
         <div className={s.headerLeft}>
           <span className={s.headerIcon}>🤖</span>
-          <span className={s.headerTitle}>ArmIQ AI</span>
+          <span className={s.headerTitle}>BatIQ AI</span>
         </div>
         <button type="button" className={s.closeBtn} onClick={() => setOpen(false)}>✕</button>
       </div>
 
-      <div className={s.messages}>
+      <div className={s.messages} ref={messagesRef}>
         <div className={s.msg} data-role="assistant">
           <div className={s.msgBubble} data-role="assistant">
-            I&apos;ve analyzed your mechanics. Your score is {result.score} with timing at {result.breakdown.timing}, power at {result.breakdown.power_transfer}, and bat control at {result.breakdown.bat_control}. Ask me anything — what a score means, how to fix an issue, or what drills would help.
+            I&apos;ve analyzed your swing. Your score is {result.score} with timing at {result.breakdown.timing}, power at {result.breakdown.power_transfer}, and bat control at {result.breakdown.bat_control}. Ask me anything — what a score means, how to fix an issue, or what drills would help.
           </div>
         </div>
 
@@ -93,13 +95,12 @@ export function SwingChat({ result }: { result: Result }) {
           </div>
         )}
 
-        <div ref={bottomRef} />
       </div>
 
       <div className={s.inputRow}>
         <input
           className={s.input}
-          placeholder="Ask about your mechanics..."
+          placeholder="Ask about your swing..."
           value={input}
           onChange={(e) => setInput(e.target.value)}
           onKeyDown={(e) => e.key === "Enter" && send()}
