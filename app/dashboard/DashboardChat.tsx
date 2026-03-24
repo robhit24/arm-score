@@ -15,10 +15,12 @@ export function DashboardChat({ email, latestScore, breakdown, top3 }: {
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
   const [open, setOpen] = useState(false);
-  const bottomRef = useRef<HTMLDivElement>(null);
+  const messagesRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    bottomRef.current?.scrollIntoView({ behavior: "smooth" });
+    if (messagesRef.current) {
+      messagesRef.current.scrollTop = messagesRef.current.scrollHeight;
+    }
   }, [messages]);
 
   async function send() {
@@ -83,7 +85,7 @@ export function DashboardChat({ email, latestScore, breakdown, top3 }: {
         <button type="button" className={s.closeBtn} onClick={() => setOpen(false)}>✕</button>
       </div>
 
-      <div className={s.messages}>
+      <div className={s.messages} ref={messagesRef}>
         <div className={s.msg} data-role="assistant">
           <div className={s.msgBubble} data-role="assistant">
             Hey! I know your scores and your plan. Ask me anything — how to do a drill, what a score means, what to focus on this week, or any mechanics question.
@@ -104,7 +106,6 @@ export function DashboardChat({ email, latestScore, breakdown, top3 }: {
           </div>
         )}
 
-        <div ref={bottomRef} />
       </div>
 
       <div className={s.inputRow}>
