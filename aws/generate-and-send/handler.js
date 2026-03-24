@@ -230,12 +230,21 @@ Week 4: Integration — mound work, bullpen sessions, game-speed reps with focus
 ${weekCount >= 6 ? `Week 5: Pressure reps — pitch count challenges, simulated innings, fatigue management
 Week 6: Peak + maintain — full bullpen sessions, confidence building, pre-game routines` : ""}
 
+PITCH COUNT GUIDELINES BY AGE (include these in safety_notes):
+- 8U: Max 50 pitches/game, 2 games/week, no breaking balls
+- 9U-10U: Max 75 pitches/game, 2 games/week, no breaking balls
+- 11U-12U: Max 85 pitches/game, focus on fastball and changeup only
+- 13U-14U: Max 95 pitches/game, can introduce curveball with proper mechanics
+- 15U-16U: Max 95 pitches/game, full pitch arsenal with proper mechanics
+- 17U-18U: Max 105 pitches/game, monitor workload closely
+- College/Adult: Follow team/coach guidelines, monitor innings and intensity
+- SOFTBALL: No pitch count limits but monitor fatigue, rest between appearances
+
 ABSOLUTE RULES:
 - Do NOT mention: ${banned.join(", ")}
 - No video analysis, no self assessment, no coach feedback references
 - This must read like an elite pitching development plan
 - Every day must feel DIFFERENT from the day before
-- Include arm care and recovery notes daily
 
 OUTPUT: Return STRICT JSON ONLY with exactly these keys:
 {
@@ -252,7 +261,7 @@ OUTPUT: Return STRICT JSON ONLY with exactly these keys:
       "session_time_min": 25,
       "focus": "string (specific to that day, not generic)",
       "warmup": [
-        { "name":"string", "description":"string", "reps":"string" }
+        { "name":"string", "description":"2-3 sentences with specific body positions and movements", "reps":"string" }
       ],
       "drills": [
         {
@@ -264,21 +273,28 @@ OUTPUT: Return STRICT JSON ONLY with exactly these keys:
           "common_mistakes": ["...","..."]
         }
       ],
+      "arm_care": [
+        { "name":"string", "description":"string", "reps":"string" }
+      ],
       "parent_help": [
         "string (specific observation or action for that day's drills)",
         "string"
       ],
-      "success_metric": "string (observable outcome — e.g. 'barrel stays in zone for 3+ consecutive reps')"
+      "success_metric": "string (observable outcome — e.g. 'release point consistent for 3+ consecutive reps')"
     }
   ],
   "equipment_notes": ["...","..."],
-  "safety_notes": ["...","..."]
+  "safety_notes": ["Include age-appropriate pitch count guidelines for ${safeAge}", "Include rest day recommendations", "Include signs of arm fatigue to watch for", "..."],
+  "arm_care_overview": "string (3-4 sentences explaining the importance of arm care for this age group and what the daily arm care routine targets)"
 }
 
 CONSTRAINTS:
 - weekly_blocks: exactly ${weekCount} weeks (1..${weekCount})
 - daily_plan: EVERY day 1..${planDays}, no gaps
-- Each day: 1-2 warmup exercises + exactly 3 drills
+- Each day MUST include: 3-4 warmup exercises (full throwing warm-up progression) + exactly 3 drills + 2-3 arm care exercises
+- Warmup must be a real throwing warm-up: start with band work or mobility, progress to light toss, build to full effort. NOT just "arm circles".
+- Arm care section is POST-session recovery: band exercises, stretches, icing guidelines
+- safety_notes must include pitch count guidelines specific to ${safeAge}
 - Keep JSON valid. No markdown. No extra keys.
 `;
 }
@@ -414,6 +430,17 @@ function dayCardHtml(d) {
     })
     .join("");
 
+  const armCare = (d.arm_care || [])
+    .map(
+      (ac) => `
+      <div class="mini">
+        <div class="miniTitle">${escapeHtml(ac.name)}</div>
+        <div class="miniText">${escapeHtml(ac.description)}</div>
+        <div class="miniMeta">${escapeHtml(ac.reps)}</div>
+      </div>`
+    )
+    .join("");
+
   const parent = (d.parent_help || []).map((p) => `<li>${escapeHtml(p)}</li>`).join("");
 
   return `
@@ -434,6 +461,11 @@ function dayCardHtml(d) {
           <div class="boxTitle">Drills</div>
           ${drills}
         </div>
+
+        ${armCare ? `<div class="box">
+          <div class="boxTitle">Arm Care (Post-Session)</div>
+          ${armCare}
+        </div>` : ""}
 
         <div class="box">
           <div class="boxTitle">Parent / Coach Notes</div>
@@ -636,13 +668,18 @@ function planToHtml({ email, planDays, analysis, plan }) {
 
           ${weeklyBlocksHtml(plan)}
 
+          ${plan.arm_care_overview ? `<div style="margin-top:14px; padding:14px; border-radius:12px; background:#f0fdf4; border:1px solid #dcfce7;">
+            <div class="label" style="color:#166534;">Arm Care Program</div>
+            <div style="margin-top:4px; font-size:12px; color:#166534; font-weight:700; line-height:1.5;">${escapeHtml(plan.arm_care_overview)}</div>
+          </div>` : ""}
+
           <div class="notesGrid">
             <div class="noteBox">
               <div class="label">Equipment</div>
               <ul>${equip}</ul>
             </div>
             <div class="noteBox">
-              <div class="label">Safety</div>
+              <div class="label">Safety & Pitch Count Guidelines</div>
               <ul>${safety}</ul>
             </div>
           </div>

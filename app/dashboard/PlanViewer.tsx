@@ -145,6 +145,20 @@ export function PlanViewer({
                   ))}
                 </div>
 
+                {/* Arm care */}
+                {(d as any).arm_care?.length > 0 && (
+                  <div className={s.section}>
+                    <div className={s.sectionTitle}>Arm Care (Post-Session)</div>
+                    {((d as any).arm_care || []).map((ac: any, i: number) => (
+                      <div key={i} className={s.miniCard}>
+                        <div className={s.miniName}>{ac.name}</div>
+                        <div className={s.miniDesc}>{ac.description}</div>
+                        <div className={s.miniReps}>{ac.reps}</div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
                 {/* Parent help */}
                 <div className={s.section}>
                   <div className={s.sectionTitle}>Parent / Coach Notes</div>
