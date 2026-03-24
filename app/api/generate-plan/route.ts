@@ -43,9 +43,11 @@ export async function POST() {
         TableName: "SwingAnalyses",
         IndexName: "email-index",
         KeyConditionExpression: "email = :e",
-        ExpressionAttributeValues: { ":e": email },
+        FilterExpression: "#src = :armiq AND score > :zero",
+        ExpressionAttributeNames: { "#src": "source" },
+        ExpressionAttributeValues: { ":e": email, ":armiq": "armiq", ":zero": 0 },
         ScanIndexForward: false,
-        Limit: 1,
+        Limit: 10,
       })
     );
 
