@@ -119,6 +119,7 @@ export default function Dashboard() {
           age_group: analyzeAge,
           frames,
           frame_hash: frameHash,
+          force_fresh: true,
         }),
       });
 

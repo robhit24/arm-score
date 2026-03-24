@@ -17,7 +17,7 @@ export async function POST(req: Request) {
 
     const client = new OpenAI({ apiKey });
 
-    const { email, sport, age_group, frames, frame_hash } = await req.json();
+    const { email, sport, age_group, frames, frame_hash, force_fresh } = await req.json();
     const safeAge = age_group || "12U";
 
     if (!email || !email.includes("@")) {
@@ -28,8 +28,8 @@ export async function POST(req: Request) {
       return new Response("Need frames[] (>=3)", { status: 400 });
     }
 
-    // Server-side dedup
-    if (frame_hash && typeof frame_hash === "string") {
+    // Server-side dedup: skip for subscribers (force_fresh)
+    if (frame_hash && typeof frame_hash === "string" && !force_fresh) {
       try {
         const checkUrl = `https://8156f6tuae.execute-api.us-east-2.amazonaws.com/live/store-analysis?frame_hash=${encodeURIComponent(frame_hash)}`;
         const checkRes = await fetch(checkUrl);
