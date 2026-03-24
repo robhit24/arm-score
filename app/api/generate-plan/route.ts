@@ -78,7 +78,7 @@ export async function POST() {
     // Invoke the Lambda directly (no 2-hour delay for subscribers)
     await lambda.send(
       new InvokeCommand({
-        FunctionName: "generate-and-send-plan-live-generateAndSendPlan",
+        FunctionName: "armiq-generate-plan-live-generateAndSendPlan",
         InvocationType: "Event",
         Payload: Buffer.from(JSON.stringify({ job_id: jobId })),
       })

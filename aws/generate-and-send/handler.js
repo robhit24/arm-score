@@ -22,10 +22,10 @@ const JOBS_TABLE = process.env.JOBS_TABLE;
 const SES_FROM = process.env.SES_FROM;
 const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
 
-const BRAND_NAME = process.env.BRAND_NAME || "BatIQ";
+const BRAND_NAME = process.env.BRAND_NAME || "ArmIQ";
 const BRAND_PRIMARY = process.env.BRAND_PRIMARY || "#e10600";
 const BRAND_DARK = process.env.BRAND_DARK || "#111111";
-const REUPLOAD_URL = process.env.REUPLOAD_URL || "https://batiq.ai";
+const REUPLOAD_URL = process.env.REUPLOAD_URL || "https://armiq.ai";
 
 // ---------- helpers ----------
 function escapeHtml(s) {
@@ -170,29 +170,29 @@ function promptForPlan({ planDays, analysis, sport, ageGroup }) {
   // Identify weakest area to weight the drill selection
   const bd = analysis.breakdown || {};
   const areas = [
-    { name: "timing", score: bd.timing || 70 },
-    { name: "power_transfer", score: bd.power_transfer || 70 },
-    { name: "bat_control", score: bd.bat_control || 70 },
+    { name: "arm_path", label: "Arm Path", score: bd.timing || 70 },
+    { name: "mechanics", label: "Mechanics", score: bd.power_transfer || 70 },
+    { name: "command", label: "Command", score: bd.bat_control || 70 },
   ].sort((a, b) => a.score - b.score);
-  const weakest = areas[0].name;
-  const secondWeakest = areas[1].name;
+  const weakest = areas[0].label;
+  const secondWeakest = areas[1].label;
 
   const safeAge = ageGroup || "12U";
 
   return `
-You are an elite youth ${sport} hitting development coach designing a ${planDays}-day program.
+You are an elite youth ${sport} pitching development coach designing a ${planDays}-day program.
 
 ATHLETE AGE GROUP: ${safeAge}
 Adapt everything to this age:
-- 8U-10U: Keep sessions 15-20 min. Use fun, game-like drills. Simple cues (1-2 words). No heavy resistance or overload. Parent involvement is critical. Focus on hand-eye coordination and basic rotation.
-- 11U-13U: Sessions 20-25 min. Introduce proper mechanics concepts. Start building muscle memory patterns. Can use light resistance bands. Cues can be more technical but still concise.
-- 14U-16U: Sessions 25-35 min. Full mechanical drills. Overload/underload training appropriate. Can handle complex multi-step cues. Developing power and bat speed.
-- 17U-18U: Sessions 30-40 min. Near-adult programming. Advanced sequencing, game-speed transfer, pressure reps. Full resistance training integration.
-- College/Adult: Full intensity. Advanced periodization. Game-situation specificity. Peak performance focus.
+- 8U-10U: Keep sessions 15-20 min. Fun, game-like throwing drills. Simple cues (1-2 words). NO weighted balls or resistance bands. Focus on balance, direction, and basic arm path. Parent involvement critical.
+- 11U-13U: Sessions 20-25 min. Introduce proper pitching mechanics concepts. Light towel drills and flatground work. Start building repeatable delivery patterns. Can use light resistance bands for hips only.
+- 14U-16U: Sessions 25-35 min. Full mechanical drills. Weighted ball programs appropriate. Mound work with intent. Can handle complex multi-step cues. Developing velocity and command.
+- 17U-18U: Sessions 30-40 min. Near-adult programming. Advanced sequencing, bullpen sessions, game-speed transfer. Weighted ball and long-toss integration.
+- College/Adult: Full intensity. Advanced periodization. Pitch design, tunneling, game-situation specificity. Peak performance focus.
 
-SWING ANALYSIS:
+PITCH ANALYSIS:
 Score: ${analysis.score} | Label: ${analysis.score_label}
-Timing: ${bd.timing} | Power Transfer: ${bd.power_transfer} | Bat Control: ${bd.bat_control}
+Arm Path: ${bd.timing} | Mechanics: ${bd.power_transfer} | Command: ${bd.bat_control}
 Weakest area: ${weakest} (${areas[0].score}), then ${secondWeakest} (${areas[1].score})
 Top 3 issues:
 1) ${analysis.top3?.[0]}
@@ -203,35 +203,39 @@ Uplift: ${analysis.uplift_line}
 
 DRILL LIBRARY — you MUST use drills from this list (mix and vary across days). You may add 3-5 original drills not on this list, but the majority must come from here:
 
-TIMING DRILLS: Walk-up timing drill, Rhythm step-and-swing, Pause-at-load drill, Pitcher tempo matching, Heel-drop trigger drill, Two-count load-to-contact, Slow-pitch timing ladder, Front-foot freeze drill, Tempo tee (3-sec hold), Hip-lead separation drill
+ARM PATH DRILLS: Arm circle wall drill, Elbow spiral drill, Scarecrow throws, High-cocked position holds, Forearm spiral drill, Prone Y-T-W raises, Thumb-to-thigh path drill, Standing arm action drill, Figure-8 arm path drill, Behind-the-back catch drill
 
-POWER TRANSFER DRILLS: Medicine ball rotational throw, Heavy bat underload/overload, Resistance band hip fire, Reverse chain drill (hips-then-hands), Low-to-high barrel path, Connection ball squeeze drill, Back-hip drive off tee, Drop-step power drill, Weighted ball slam rotation, Step-through power swing
+MECHANICS DRILLS: Hip-to-shoulder separation drill, Stride length markers, Rocker drill (momentum work), Knee-to-knee drive drill, Flatground with focus cues, Towel drill for extension, Hershiser drill (cross-body), Drop-step power drill, Pivot-and-throw drill, Walk-through delivery drill
 
-BAT CONTROL DRILLS: Inside-pitch tee work, Opposite-field placement drill, Two-strike choke-up swings, High-tee barrel precision, Short-swing flips (compact zone), Knee drill for bat path, Top-hand isolation drill, Bottom-hand isolation drill, Paint-the-corner tee, Contact-point ladder (in/mid/out)
+COMMAND DRILLS: Target toss (4 quadrants), Glove-side finish drill, Balance point holds (3-sec), Eyes-on-target tracking drill, Flat-ground spot work, Bullpen with zones, Change-up touch drill, 2-seam/4-seam location sets, Release point repetition drill, Controlled long toss (accuracy focus)
 
-WARMUP OPTIONS: Band pull-aparts, Hip circles, Trunk rotations, Wrist rolls, Arm circles, Lateral lunges, Cat-cow spine, Standing torso twists, Leg swings, Light shadow swings
+WARMUP OPTIONS: Band pull-aparts, Arm circles (forward/backward), Shoulder external rotation stretches, Trunk rotations, Wrist pronation/supination, Hip circles, Lateral lunges, Cat-cow spine, Scapular wall slides, Light long toss progression
+
+ARM CARE: Jaeger band routine, Sleeper stretches, Prone Y-T raises, Reverse throws, Wrist weight pronation/supination
 
 VARIETY RULES (CRITICAL):
 - NEVER repeat the same drill name on consecutive days
 - Within each week, use at least 6 DIFFERENT drill names across the 7 days
 - Vary warmup exercises — rotate through at least 4 different warmups per week
-- Change rep counts and set structures week to week (e.g., 3x8 -> 4x6 -> 3x10)
+- Change rep counts and set structures week to week (e.g., 3x10 -> 4x8 -> 3x12)
 - Each week must introduce at least 2 drills NOT used the previous week
 - Weight drill selection toward ${weakest} (40% of drills), ${secondWeakest} (35%), strongest area (25%)
+- ALWAYS include at least 1 arm care exercise per day
 
 PROGRESSION ARC (week by week):
 Week 1: Isolation + feel — slow reps, exaggerated positions, building awareness of the ${weakest} issue
-Week 2: Sequencing — connect ${weakest} fix into the full swing chain, tempo work
-${weekCount >= 4 ? `Week 3: Load + intent — increase bat speed, add resistance/overload, challenge timing
-Week 4: Integration — live-speed reps, random pitch locations, game-transfer scenarios` : ""}
-${weekCount >= 6 ? `Week 5: Pressure reps — competitive counts, situational hitting, fatigue sets
-Week 6: Peak + maintain — full-speed game swings, confidence building, review best cues` : ""}
+Week 2: Sequencing — connect ${weakest} fix into the full delivery chain, tempo work
+${weekCount >= 4 ? `Week 3: Intent + velocity — add long toss distance, increase intensity, weighted ball work (age appropriate)
+Week 4: Integration — mound work, bullpen sessions, game-speed reps with focus cues` : ""}
+${weekCount >= 6 ? `Week 5: Pressure reps — pitch count challenges, simulated innings, fatigue management
+Week 6: Peak + maintain — full bullpen sessions, confidence building, pre-game routines` : ""}
 
 ABSOLUTE RULES:
 - Do NOT mention: ${banned.join(", ")}
 - No video analysis, no self assessment, no coach feedback references
-- This must read like an elite development plan
+- This must read like an elite pitching development plan
 - Every day must feel DIFFERENT from the day before
+- Include arm care and recovery notes daily
 
 OUTPUT: Return STRICT JSON ONLY with exactly these keys:
 {
@@ -594,14 +598,14 @@ function planToHtml({ email, planDays, analysis, plan }) {
           <div class="brandDot"></div>
           <div class="brandText">${escapeHtml(BRAND_NAME)}</div>
         </div>
-        <h1>Custom ${escapeHtml(planDays)}-Day Swing Program</h1>
-        <div class="coverSub">Prepared for ${escapeHtml(email)} · Based on your swing analysis</div>
+        <h1>Custom ${escapeHtml(planDays)}-Day Pitching Program</h1>
+        <div class="coverSub">Prepared for ${escapeHtml(email)} · Based on your pitch analysis</div>
 
         <!-- Score card -->
         <div class="scoreCard">
           <div class="scoreLeft">
             <div class="scoreNum" style="color:${scoreColor}">${escapeHtml(analysis.score)}</div>
-            <div class="scoreLabelSmall">Swing Score</div>
+            <div class="scoreLabelSmall">Pitch Score</div>
             <div class="scorePill">${escapeHtml(analysis.score_label)}</div>
           </div>
           <div class="scoreRight">
@@ -647,7 +651,7 @@ function planToHtml({ email, planDays, analysis, plan }) {
         ${weeklyPages}
 
         <div class="footer">
-          ${escapeHtml(BRAND_NAME)} · Custom swing development program · For skill development, not medical advice
+          ${escapeHtml(BRAND_NAME)} · Custom pitching development program · For skill development, not medical advice
         </div>
       </div>
     </body>
@@ -752,7 +756,7 @@ module.exports.handler = async (event) => {
 
       const sesResp = await ses.send(new SendRawEmailCommand({ RawMessage: { Data: rawEmail } }));
       await setJobStatus(job_id, "needs_swing", {
-        error_message: "Missing swing analysis record",
+        error_message: "Missing pitch analysis record",
         ses_message_id: sesResp?.MessageId || "unknown",
         failed_at: new Date().toISOString(),
       });
@@ -776,10 +780,10 @@ module.exports.handler = async (event) => {
     });
 
     const pdfBuffer = await htmlToPdfBuffer(html);
-    const filename = `${BRAND_NAME}-Custom-${planDays}-Day-Swing-Program.pdf`.replace(/\s+/g, "-");
+    const filename = `${BRAND_NAME}-Custom-${planDays}-Day-Pitching-Program.pdf`.replace(/\s+/g, "-");
 
-    const subject = `Your Custom ${planDays}-Day Swing Fix Program (PDF)`;
-    const text = `Attached is your custom ${planDays}-day program based on your swing analysis.`;
+    const subject = `Your Custom ${planDays}-Day Pitching Program (PDF)`;
+    const text = `Attached is your custom ${planDays}-day program based on your pitch analysis.`;
 
     const rawEmail = buildRawEmail({
       to: job.email,

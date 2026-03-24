@@ -1,4 +1,4 @@
-service: generate-and-send-plan
+service: armiq-generate-plan
 frameworkVersion: "3"
 
 provider:
@@ -14,10 +14,10 @@ provider:
     JOBS_TABLE: PlanJobs
     SES_FROM: ${env:SES_FROM}
     OPENAI_API_KEY: ${env:OPENAI_API_KEY}
-    BRAND_NAME: HIT24
+    BRAND_NAME: ArmIQ
     BRAND_PRIMARY: "#e10600"
     BRAND_DARK: "#111111"
-    REUPLOAD_URL: "https://swing-score-rho.vercel.app"
+    REUPLOAD_URL: "https://armiq.ai"
 
   iam:
     role:
