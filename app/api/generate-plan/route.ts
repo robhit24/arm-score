@@ -69,7 +69,7 @@ export async function POST() {
           swing_id: latestSwing.swing_id,
           plan_days: 30,
           status: "scheduled",
-          source: "subscription",
+          source: "armiq",
           created_at: new Date().toISOString(),
         },
       })

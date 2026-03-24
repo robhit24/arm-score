@@ -312,6 +312,7 @@ export default function Page() {
           sport,
           age_group: ageGroup,
           frame_hash: frameHash,
+          source: "armiq",
           analysis: data,
         }),
       });

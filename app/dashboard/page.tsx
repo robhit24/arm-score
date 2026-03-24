@@ -137,6 +137,7 @@ export default function Dashboard() {
             sport: analyzeSport,
             age_group: analyzeAge,
             frame_hash: frameHash,
+            source: "armiq",
             analysis: data,
           }),
         }

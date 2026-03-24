@@ -16,11 +16,13 @@ export async function GET() {
   const result = await ddb.send(
     new ScanCommand({
       TableName: "PlanJobs",
-      FilterExpression: "email = :e AND #s = :sent",
+      FilterExpression: "email = :e AND #s = :sent AND (source = :src OR begins_with(job_id, :sub))",
       ExpressionAttributeNames: { "#s": "status" },
       ExpressionAttributeValues: {
         ":e": email,
         ":sent": "sent",
+        ":src": "armiq",
+        ":sub": "sub-",
       },
     })
   );

@@ -20,8 +20,9 @@ export async function GET() {
       TableName: "SwingAnalyses",
       IndexName: "email-index",
       KeyConditionExpression: "email = :e",
-      ExpressionAttributeValues: { ":e": email },
-      ScanIndexForward: false, // newest first
+      FilterExpression: "source = :src",
+      ExpressionAttributeValues: { ":e": email, ":src": "armiq" },
+      ScanIndexForward: false,
     })
   );
 
