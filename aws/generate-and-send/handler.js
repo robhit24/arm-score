@@ -246,21 +246,45 @@ Week 4: Integration — mound work, bullpen sessions, game-speed reps with focus
 ${weekCount >= 6 ? `Week 5: Pressure reps — pitch count challenges, simulated innings, fatigue management
 Week 6: Peak + maintain — full bullpen sessions, confidence building, pre-game routines` : ""}
 
-PITCH COUNT GUIDELINES BY AGE (include these in safety_notes):
-- 8U: Max 50 pitches/game, 2 games/week, no breaking balls
-- 9U-10U: Max 75 pitches/game, 2 games/week, no breaking balls
-- 11U-12U: Max 85 pitches/game, focus on fastball and changeup only
-- 13U-14U: Max 95 pitches/game, can introduce curveball with proper mechanics
-- 15U-16U: Max 95 pitches/game, full pitch arsenal with proper mechanics
-- 17U-18U: Max 105 pitches/game, monitor workload closely
-- College/Adult: Follow team/coach guidelines, monitor innings and intensity
-- SOFTBALL: No pitch count limits but monitor fatigue, rest between appearances
+PITCH COUNT & REST GUIDELINES BY AGE — INCLUDE ALL OF THIS FOR ${safeAge} IN safety_notes (this is critical for parent education):
+
+BASEBALL:
+- 8U: Max 50 pitches/game, 2 appearances/week. NO breaking balls. 1 day rest after 1-20 pitches, 2 days after 21-35, 3 days after 36-50.
+- 9U-10U: Max 75 pitches/game, 2 appearances/week. NO breaking balls. 1 day rest after 1-20, 2 days after 21-35, 3 days after 36-50, 4 days after 51-65.
+- 11U-12U: Max 85 pitches/game. Fastball and changeup ONLY. 1 day rest after 1-20, 2 days after 21-35, 3 days after 36-50, 4 days after 51-65.
+- 13U-14U: Max 95 pitches/game. Can introduce curveball with proper mechanics. 1 day rest after 1-20, 2 days after 21-35, 3 days after 36-50, 4 days after 51-65.
+- 15U-16U: Max 95 pitches/game. Full arsenal allowed. 1 day rest after 1-30, 2 days after 31-45, 3 days after 46-60, 4 days after 61+.
+- 17U-18U: Max 105 pitches/game. Monitor workload and innings carefully. Same rest rules as 15U-16U.
+- College/Adult: Follow team guidelines. Track pitch counts, innings per week, and overall workload.
+
+SOFTBALL:
+- No official pitch count limits but fatigue MUST be monitored
+- Watch for: drop in velocity, loss of control, change in arm slot, complaints of tiredness
+- Recommend: max 2 games/day with at least 30 min rest between, no more than 4 appearances/week during heavy tournament play
+- Rest: 1 day off after 60+ pitches, at minimum
+
+WARNING SIGNS OF ARM FATIGUE (include in safety_notes for ALL ages):
+- Decreased velocity or "arm feels heavy"
+- Loss of command / can't locate fastball
+- Change in arm slot or release point
+- Elbow or shoulder pain DURING or AFTER throwing (STOP IMMEDIATELY)
+- Taking longer to warm up than usual
+- Avoiding throwing or making excuses not to pitch
+
+PARENT NOTE: If a coach is asking your athlete to pitch through pain or ignoring pitch counts, it is YOUR responsibility to protect your child's arm. No game is worth a torn UCL or shoulder injury. These guidelines are based on USA Baseball, Pitch Smart, and MLB recommendations.
+
+ARM CARE EMPHASIS (especially for baseball):
+- Baseball plans must include 3 arm care exercises EVERY day (not 2)
+- At least one exercise from each category: band work, stretching, recovery
+- Include "ice 15 minutes after any session with 30+ throws at full effort"
+- Weekly: include 1 rest day with ONLY arm care and no throwing
 
 ABSOLUTE RULES:
 - Do NOT mention: ${banned.join(", ")}
 - No video analysis, no self assessment, no coach feedback references
 - This must read like an elite pitching development plan
 - Every day must feel DIFFERENT from the day before
+- Arm safety is the #1 priority — this plan should make parents feel confident their kid's arm is protected
 
 OUTPUT: Return STRICT JSON ONLY with exactly these keys:
 {
@@ -307,7 +331,7 @@ OUTPUT: Return STRICT JSON ONLY with exactly these keys:
 CONSTRAINTS:
 - weekly_blocks: exactly ${weekCount} weeks (1..${weekCount})
 - daily_plan: EVERY day 1..${planDays}, no gaps
-- Each day MUST include: 5-6 warmup exercises (full 3-phase warm-up: mobility → activation → throwing prep) + exactly 3 drills + 2-3 arm care exercises
+- Each day MUST include: 5-6 warmup exercises (full 3-phase warm-up: mobility → activation → throwing prep) + exactly 3 drills + 3 arm care exercises (baseball) or 2-3 arm care exercises (softball)
 - Warmup MUST follow the full progression above for the correct sport. For softball: MUST include wrist snaps and K-drill. For baseball: MUST include wrist flicks and long toss build-up.
 - The warm-up alone should take 8-12 minutes. This is NOT optional — a proper warm-up prevents injury.
 - Arm care section is POST-session recovery: band exercises, stretches, icing guidelines
