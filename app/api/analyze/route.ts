@@ -31,8 +31,10 @@ export async function POST(req: Request) {
 
     const prompt = `You are an elite baseball/softball pitching mechanics analyst. You are looking at 4 frames extracted from a pitching video (roughly: wind-up/set, leg lift/balance, arm cocking/stride, release/follow-through).
 
-FIRST: Verify these frames show a pitcher throwing or in a pitching motion. If the frames do NOT show a pitcher (e.g. it's a random video, a batting video, a person walking, or anything else), return this exact JSON and nothing else:
+IMPORTANT: If the frames clearly show something completely unrelated to pitching (e.g. a selfie, a landscape, a pet, text on a screen, someone batting), return this exact JSON:
 {"error": "not_a_pitch", "message": "This doesn't appear to be a pitching video. Please upload a side-angle video of a pitching delivery."}
+
+If you can see ANY person throwing, on a mound, in a pitching motion, or in any pitching-related context — proceed with scoring. Give the benefit of the doubt.
 
 This athlete is in the ${safeAge} age group. Calibrate your expectations accordingly:
 - 8U/10U: Focus on balance and basic throwing motion. Don't expect full mechanics.
