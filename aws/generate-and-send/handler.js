@@ -209,9 +209,25 @@ MECHANICS DRILLS: Hip-to-shoulder separation drill, Stride length markers, Rocke
 
 COMMAND DRILLS: Target toss (4 quadrants), Glove-side finish drill, Balance point holds (3-sec), Eyes-on-target tracking drill, Flat-ground spot work, Bullpen with zones, Change-up touch drill, 2-seam/4-seam location sets, Release point repetition drill, Controlled long toss (accuracy focus)
 
-WARMUP OPTIONS: Band pull-aparts, Arm circles (forward/backward), Shoulder external rotation stretches, Trunk rotations, Wrist pronation/supination, Hip circles, Lateral lunges, Cat-cow spine, Scapular wall slides, Light long toss progression
+FULL PITCHING WARM-UP LIBRARY — every day must include a COMPLETE warm-up progression (5-6 exercises), not just 1-2 stretches. Build from mobility → activation → throwing prep:
 
-ARM CARE: Jaeger band routine, Sleeper stretches, Prone Y-T raises, Reverse throws, Wrist weight pronation/supination
+BASEBALL WARM-UP PROGRESSION:
+Phase 1 (Mobility): Arm circles, trunk rotations, hip circles, lateral lunges, leg swings, cat-cow spine, shoulder cross-body stretches
+Phase 2 (Activation): Band pull-aparts, scapular wall slides, external rotation with band, prone Y-T-W raises, wrist pronation/supination
+Phase 3 (Throwing Prep): Wrist flicks (10-15 at 10ft), one-knee throws (10 at 30ft), standing throws (10 at 45ft), crow hop throws (10 at 60ft), long toss build-up (60→90→120ft)
+
+SOFTBALL WARM-UP PROGRESSION:
+Phase 1 (Mobility): Arm circles (windmill motion), trunk rotations, hip circles, lateral lunges, wrist rolls, shoulder mobility circles
+Phase 2 (Activation): Band pull-aparts, scapular wall slides, wrist snaps (stationary, 20 reps), K-drill (kneeling windmill motion, 15 reps), figure-8 arm path drill
+Phase 3 (Throwing Prep): Wrist snaps at 10ft (15 reps), K-drill progression to standing (15 reps), half-circle throws at 20ft (10 reps), full windmill at 30ft (10 reps), build to full distance (10 at game speed)
+
+SOFTBALL-SPECIFIC DRILLS (use these for softball athletes):
+K-drill (kneeling windmill), Wrist snap drill, Half-circle drill, Wall spin drill, Bucket drill (release point), Walk-through windmill, Power line drill, Stride-and-throw, Glove snap drill, Backhand spin drill
+
+Use the CORRECT warm-up progression for ${sport}. Softball athletes MUST use the softball warm-up including wrist snaps and K-drill. Baseball athletes use the baseball progression.
+
+ARM CARE LIBRARY (post-session):
+Jaeger band routine (full J-band series), Sleeper stretches (30 sec each side), Prone Y-T-W raises (10 reps each), Reverse throws (15 light reps), Wrist weight pronation/supination (2x15), Cross-body shoulder stretch (30 sec each), Forearm roller (2x30 sec), Ice (15 min if thrown hard), Foam roll thoracic spine
 
 VARIETY RULES (CRITICAL):
 - NEVER repeat the same drill name on consecutive days
@@ -291,8 +307,9 @@ OUTPUT: Return STRICT JSON ONLY with exactly these keys:
 CONSTRAINTS:
 - weekly_blocks: exactly ${weekCount} weeks (1..${weekCount})
 - daily_plan: EVERY day 1..${planDays}, no gaps
-- Each day MUST include: 3-4 warmup exercises (full throwing warm-up progression) + exactly 3 drills + 2-3 arm care exercises
-- Warmup must be a real throwing warm-up: start with band work or mobility, progress to light toss, build to full effort. NOT just "arm circles".
+- Each day MUST include: 5-6 warmup exercises (full 3-phase warm-up: mobility → activation → throwing prep) + exactly 3 drills + 2-3 arm care exercises
+- Warmup MUST follow the full progression above for the correct sport. For softball: MUST include wrist snaps and K-drill. For baseball: MUST include wrist flicks and long toss build-up.
+- The warm-up alone should take 8-12 minutes. This is NOT optional — a proper warm-up prevents injury.
 - Arm care section is POST-session recovery: band exercises, stretches, icing guidelines
 - safety_notes must include pitch count guidelines specific to ${safeAge}
 - Keep JSON valid. No markdown. No extra keys.
