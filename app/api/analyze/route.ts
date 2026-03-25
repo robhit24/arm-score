@@ -20,6 +20,39 @@ export async function POST(req: Request) {
     const { email, sport, age_group, frames, frame_hash, force_fresh } = await req.json();
     const safeAge = age_group || "12U";
 
+    // Fetch previous analysis for comparison (subscribers)
+    let previousAnalysis = "";
+    if (force_fresh && email) {
+      try {
+        const { DynamoDBClient } = await import("@aws-sdk/client-dynamodb");
+        const { DynamoDBDocumentClient, QueryCommand } = await import("@aws-sdk/lib-dynamodb");
+        const ddb = DynamoDBDocumentClient.from(new DynamoDBClient({ region: "us-east-2" }));
+
+        const prev = await ddb.send(new QueryCommand({
+          TableName: "SwingAnalyses",
+          IndexName: "email-index",
+          KeyConditionExpression: "email = :e",
+          FilterExpression: "#src = :armiq AND score > :zero",
+          ExpressionAttributeNames: { "#src": "source" },
+          ExpressionAttributeValues: { ":e": email.toLowerCase().trim(), ":armiq": "armiq", ":zero": 0 },
+          ScanIndexForward: false,
+          Limit: 1,
+        }));
+
+        const last = prev.Items?.[0];
+        if (last) {
+          previousAnalysis = `
+PREVIOUS ANALYSIS (from their last upload):
+Previous Score: ${last.score} | Arm Path: ${last.breakdown?.timing || "?"} | Mechanics: ${last.breakdown?.power_transfer || "?"} | Command: ${last.breakdown?.bat_control || "?"}
+Previous top 3: ${(last.top3 || []).join(", ")}
+
+IMPORTANT: Compare what you see NOW to their previous analysis. Note what IMPROVED and what STILL NEEDS WORK. Your top3 must be DIFFERENT from the previous top3 if the issues have changed. If an issue is fixed, acknowledge it and find the next priority. If the same issue persists, describe it differently (more specific).`;
+        }
+      } catch (e) {
+        console.log("Previous analysis lookup failed:", e);
+      }
+    }
+
     if (!email || !email.includes("@")) {
       return new Response("Invalid email", { status: 400 });
     }
@@ -76,6 +109,8 @@ This athlete is in the ${safeAge} age group. Calibrate your expectations accordi
 - 12U/14U: Developing mechanics. Hip-to-shoulder separation should be emerging.
 - 16U/18U: Near-adult mechanics expected. Score closer to the full rubric.
 - College/Adult: Full rubric, no adjustments. Elite standards.
+
+${previousAnalysis}
 
 FIRST: Study each frame carefully and note what you see:
 - Frame 1: What position is the pitcher in? Where are the feet, hips, arm?
