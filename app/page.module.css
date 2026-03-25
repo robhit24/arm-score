@@ -1131,6 +1131,25 @@
   cursor: pointer;
 }
 
+/* Footer links */
+.footerLinks {
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+  margin-top: 16px;
+}
+
+.footerLinks a {
+  font-size: 12px;
+  font-weight: 800;
+  color: rgba(17, 17, 17, 0.35);
+  text-decoration: none;
+}
+
+.footerLinks a:hover {
+  color: #111;
+}
+
 /* Cross-promo */
 .crossPromo {
   display: flex;

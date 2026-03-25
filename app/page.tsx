@@ -969,6 +969,7 @@ export default function Page() {
           Get Custom Plan ↓
         </button>
       )}
+      <div className={s.footerLinks}><a href="/terms">Terms</a><a href="/privacy">Privacy</a><a href="mailto:help@hit24.com">Contact</a></div>
       {/* Cross-promo */}
       <a href="https://batiq.ai" target="_blank" rel="noreferrer" className={s.crossPromo}>
         <span>🏏 Also a hitter?</span>

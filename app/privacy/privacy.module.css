@@ -1,0 +1,50 @@
+.page {
+  min-height: 100vh;
+  background: #fff;
+  padding: 40px 20px;
+  font-family: ui-sans-serif, system-ui, -apple-system, sans-serif;
+}
+
+.container {
+  max-width: 680px;
+  margin: 0 auto;
+  color: #222;
+  line-height: 1.7;
+  font-size: 15px;
+}
+
+.container h1 {
+  font-size: 28px;
+  font-weight: 1200;
+  color: #111;
+  letter-spacing: -0.5px;
+  margin-bottom: 4px;
+}
+
+.container h2 {
+  font-size: 17px;
+  font-weight: 1100;
+  color: #111;
+  margin-top: 28px;
+  margin-bottom: 8px;
+}
+
+.container p {
+  margin-bottom: 12px;
+  color: #444;
+}
+
+.container ul {
+  margin: 0 0 12px 20px;
+  color: #444;
+}
+
+.container li {
+  margin-bottom: 6px;
+}
+
+.updated {
+  color: #999;
+  font-size: 13px;
+  margin-bottom: 24px;
+}
