@@ -331,14 +331,12 @@ OUTPUT: Return STRICT JSON ONLY with exactly these keys:
 CONSTRAINTS:
 - weekly_blocks: exactly ${weekCount} weeks (1..${weekCount})
 - daily_plan: EVERY day 1..${planDays}, no gaps
-- Each day MUST include: 5-6 warmup exercises (full 3-phase warm-up: mobility → activation → throwing prep) + exactly 3 drills + 3 arm care exercises (baseball) or 2-3 arm care exercises (softball)
-- Warmup MUST follow the full 3-phase progression EVERY SINGLE DAY — not just Day 1. Do NOT shortcut to "arm circles and butt kicks" on later days.
-- EVERY day must have: 2 mobility exercises + 2 activation exercises + 2 throwing prep exercises = 6 warmup items minimum
-- For softball: MUST include wrist snaps and K-drill in Phase 3 every day
-- For baseball: MUST include wrist flicks progressing to long toss every day
-- Vary the specific exercises within each phase day-to-day, but NEVER skip a phase
-- If I see "arm circles" as the only warmup on any day, the plan is WRONG
-- The warm-up alone should take 8-12 minutes. This is NOT optional — a proper warm-up prevents injury.
+- Each day MUST include: exactly 4 warmup exercises + exactly 3 drills + exactly 2 arm care exercises
+- Warmup: EVERY day must have exactly 4 warmup exercises: 1 mobility, 1 band/activation, 1 throwing prep, 1 sport-specific
+- For softball Day N throwing prep: rotate between wrist snaps, K-drill, half-circle throws, wall spins
+- For baseball Day N throwing prep: rotate between wrist flicks, one-knee throws, crow hops, long toss
+- Do NOT use "arm circles" or "butt kicks" as warmup. Use REAL pitcher warmup exercises from the library above.
+- COPY-PASTE THE SAME WARMUP FORMAT for all 30 days. Do not get lazy on days 2-30.
 - Arm care section is POST-session recovery: band exercises, stretches, icing guidelines
 - safety_notes must include pitch count guidelines specific to ${safeAge}
 - Keep JSON valid. No markdown. No extra keys.
