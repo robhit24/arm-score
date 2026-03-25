@@ -15,8 +15,8 @@ export async function extractFrames(file: File, frameCount = 4): Promise<string[
   const ctx = canvas.getContext("2d");
   if (!ctx) throw new Error("Canvas not supported");
 
-  canvas.width = 720;
-  canvas.height = 400;
+  canvas.width = 1280;
+  canvas.height = 720;
 
   // Evenly space frames across the middle 80% of the video
   // Skip first 10% and last 10% to avoid black frames
@@ -32,7 +32,7 @@ export async function extractFrames(file: File, frameCount = 4): Promise<string[
     video.currentTime = t;
     await new Promise<void>((resolve) => (video.onseeked = () => resolve()));
     ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-    frames.push(canvas.toDataURL("image/jpeg", 0.7));
+    frames.push(canvas.toDataURL("image/jpeg", 0.85));
   }
 
   URL.revokeObjectURL(url);

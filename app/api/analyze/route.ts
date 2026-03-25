@@ -77,7 +77,13 @@ This athlete is in the ${safeAge} age group. Calibrate your expectations accordi
 - 16U/18U: Near-adult mechanics expected. Score closer to the full rubric.
 - College/Adult: Full rubric, no adjustments. Elite standards.
 
-Score this pitching delivery on THREE separate categories using the rubrics below. Be honest and specific for a ${safeAge} athlete.
+FIRST: Study each frame carefully and note what you see:
+- Frame 1: What position is the pitcher in? Where are the feet, hips, arm?
+- Frame 2: What phase? Leg lift height? Balance? Where is the glove?
+- Frame 3: Arm position? Stride length? Hip rotation started?
+- Frame 4: Release or follow-through? Where did the arm finish? Balance?
+
+THEN score this pitching delivery on THREE separate categories using the rubrics below. Your top3 must reference SPECIFIC things you saw in the frames, not generic textbook issues. Be honest and specific for a ${safeAge} athlete.
 
 ═══ ARM PATH (0-100) ═══
 90-100: Clean arm circle. Elbow at or above shoulder at foot strike. Smooth acceleration. No inverted W or short-arming.
