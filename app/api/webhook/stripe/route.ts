@@ -43,7 +43,7 @@ export async function POST(req: Request) {
         }
       }
 
-      if (email) {
+      if (email && session.mode === "subscription") {
         await ddb.send(
           new UpdateCommand({
             TableName: "ArmIQUsers",
@@ -57,6 +57,41 @@ export async function POST(req: Request) {
           })
         );
         console.log("Marked subscribed:", email);
+      } else if (email && session.mode === "payment") {
+        const planDays = Number(session.metadata?.plan_days) || 30;
+        const swingId = session.metadata?.swing_id || "";
+
+        if (swingId) {
+          const { PutCommand } = await import("@aws-sdk/lib-dynamodb");
+          const jobId = `stripe-${session.id}`;
+
+          await ddb.send(
+            new PutCommand({
+              TableName: "PlanJobs",
+              Item: {
+                job_id: jobId,
+                email,
+                swing_id: swingId,
+                plan_days: planDays,
+                status: "scheduled",
+                source: "armiq",
+                created_at: new Date().toISOString(),
+              },
+            })
+          );
+
+          const { LambdaClient, InvokeCommand } = await import("@aws-sdk/client-lambda");
+          const lambda = new LambdaClient({ region: "us-east-2" });
+          await lambda.send(
+            new InvokeCommand({
+              FunctionName: "armiq-generate-plan-live-generateAndSendPlan",
+              InvocationType: "Event",
+              Payload: Buffer.from(JSON.stringify({ job_id: jobId })),
+            })
+          );
+
+          console.log("One-time plan job created:", jobId, planDays, "days");
+        }
       } else {
         console.log("No email found in checkout session:", session.id);
       }

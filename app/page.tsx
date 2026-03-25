@@ -396,17 +396,20 @@ export default function Page() {
       ? `Best value (saves ${money(saveVs14)} vs buying two 14-day plans)`
       : "Best value for most athletes";
 
-  const link14 = `https://hit24.com/cart/add?id=53076624900403&quantity=1&properties[swing_id]=${encodeURIComponent(
-    swingId
-  )}&properties[plan_days]=14&return_to=/checkout${utmParams}`;
-
-  const link30 = `https://hit24.com/cart/add?id=53076624933171&quantity=1&properties[swing_id]=${encodeURIComponent(
-    swingId
-  )}&properties[plan_days]=30&return_to=/checkout${utmParams}`;
-
-  const link45 = `https://hit24.com/cart/add?id=53076624965939&quantity=1&properties[swing_id]=${encodeURIComponent(
-    swingId
-  )}&properties[plan_days]=45&return_to=/checkout${utmParams}`;
+  async function buyPlan(planDays: number, price: number) {
+    trackCheckout(`${planDays}-Day Plan`, price);
+    try {
+      const res = await fetch("/api/checkout", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ email, plan_days: planDays, swing_id: swingId }),
+      });
+      if (res.ok) {
+        const { url } = await res.json();
+        window.location.href = url;
+      }
+    } catch {}
+  }
 
   return (
     <main className={s.main}>
@@ -822,9 +825,9 @@ export default function Page() {
                       "Daily reps + cage structure",
                       "Great for tryouts & quick timelines",
                     ]}
-                    href={link14}
+                    href="#"
                     enabled={enabledOffers}
-                    onClick={() => trackCheckout("14-Day Plan", price14)}
+                    onClick={() => buyPlan(14, price14)}
                   />
 
                   <PlanCard
@@ -840,10 +843,10 @@ export default function Page() {
                       "Fix mechanics + build repeatable timing",
                       "Weekly focus blocks + progression drills",
                     ]}
-                    href={link30}
+                    href="#"
                     primary
                     enabled={enabledOffers}
-                    onClick={() => trackCheckout("30-Day Plan", price30)}
+                    onClick={() => buyPlan(30, price30)}
                   />
 
                   <PlanCard
@@ -859,9 +862,9 @@ export default function Page() {
                       "Harder progression each week",
                       "Best for serious development phases",
                     ]}
-                    href={link45}
+                    href="#"
                     enabled={enabledOffers}
-                    onClick={() => trackCheckout("45-Day Plan", price45)}
+                    onClick={() => buyPlan(45, price45)}
                   />
                 </div>
 

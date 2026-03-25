@@ -33,11 +33,16 @@ export function PlanCard({
   return (
     <a
       href={href}
-      target="_blank"
+      target={href === "#" ? undefined : "_blank"}
       rel="noreferrer"
       className={s.link}
       data-disabled={!enabled}
-      onClick={onClick}
+      onClick={(e) => {
+        if (onClick) {
+          e.preventDefault();
+          onClick();
+        }
+      }}
     >
       <div
         className={s.card}
