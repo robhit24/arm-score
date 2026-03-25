@@ -573,6 +573,10 @@ export default function Page() {
                           <span className={s.videoReqIcon}>1️⃣</span>
                           <span>One pitch only</span>
                         </div>
+                        <div className={s.videoReq}>
+                          <span className={s.videoReqIcon}>🎬</span>
+                          <span>Slo-mo for best results</span>
+                        </div>
                       </div>
 
                       <input
@@ -596,7 +600,7 @@ export default function Page() {
                           </>
                         ) : (
                           <div className={s.uploadTitle}>
-                            🎥 Tap to upload your mechanics (under 10 sec)
+                            🎥 Tap to upload (slo-mo recommended)
                           </div>
                         )}
                       </button>

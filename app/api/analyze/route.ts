@@ -101,7 +101,7 @@ IMPORTANT: Compare what you see NOW to their previous analysis. Note what IMPROV
     }
 
 
-    const prompt = `You are an elite baseball/softball pitching mechanics analyst. You are looking at 4 frames extracted from a pitching video (roughly: wind-up/set, leg lift/balance, arm cocking/stride, release/follow-through).
+    const prompt = `You are an elite baseball/softball pitching mechanics analyst. You are looking at 8 frames extracted from a pitching video, with extra frames clustered around the arm action and release phase for detail. Frames roughly cover: wind-up, leg lift, stride, arm cocking, acceleration, release point, early follow-through, finish.
 
 
 This athlete is in the ${safeAge} age group. Calibrate your expectations accordingly:
@@ -112,11 +112,11 @@ This athlete is in the ${safeAge} age group. Calibrate your expectations accordi
 
 ${previousAnalysis}
 
-FIRST: Study each frame carefully and note what you see:
-- Frame 1: What position is the pitcher in? Where are the feet, hips, arm?
-- Frame 2: What phase? Leg lift height? Balance? Where is the glove?
-- Frame 3: Arm position? Stride length? Hip rotation started?
-- Frame 4: Release or follow-through? Where did the arm finish? Balance?
+FIRST: Study each of the 8 frames carefully:
+- Frames 1-3 (early): Wind-up, leg lift, stride. Check balance, leg lift height, stride direction and length.
+- Frames 4-5 (arm action): Arm cocking position. Is elbow at shoulder height? Forearm angle? Scapular loading?
+- Frames 6-7 (release): Release point. Where is the arm relative to the head? Trunk angle? Front leg bracing or collapsing?
+- Frame 8 (finish): Follow-through. Did they decelerate safely? Balanced? Glove tucked?
 
 THEN score this pitching delivery on THREE separate categories using the rubrics below. Your top3 must reference SPECIFIC things you saw in the frames, not generic textbook issues. Be honest and specific for a ${safeAge} athlete.
 
@@ -174,7 +174,7 @@ IMPORTANT: Map the scores as:
 - "power_transfer" = MECHANICS score
 - "bat_control" = COMMAND score`;
 
-    const imgs = frames.slice(0, 4);
+    const imgs = frames.slice(0, 8);
 
     const completion = await client.chat.completions.create({
       model: "gpt-4o",

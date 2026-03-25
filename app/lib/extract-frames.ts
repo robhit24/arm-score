@@ -1,4 +1,4 @@
-export async function extractFrames(file: File, frameCount = 4): Promise<string[]> {
+export async function extractFrames(file: File, frameCount = 8): Promise<string[]> {
   const url = URL.createObjectURL(file);
   const video = document.createElement("video");
   video.src = url;
@@ -18,13 +18,13 @@ export async function extractFrames(file: File, frameCount = 4): Promise<string[
   canvas.width = 1280;
   canvas.height = 720;
 
-  // Evenly space frames across the middle 80% of the video
-  // Skip first 10% and last 10% to avoid black frames
-  const startPct = 0.10;
-  const endPct = 0.90;
-  const range = endPct - startPct;
-  const times = Array.from({ length: frameCount }, (_, i) =>
-    Math.max(0.1, Math.min(duration - 0.1, (startPct + (range * (i + 0.5)) / frameCount) * duration))
+  // Pitching: 3 frames in first half (wind-up, leg lift, stride)
+  // 5 frames clustered in second half (arm cocking, acceleration, release, follow-through)
+  const earlyFrames = [0.12, 0.25, 0.38]; // wind-up phases
+  const lateFrames = [0.48, 0.56, 0.64, 0.72, 0.82]; // arm action + release
+  const phasePoints = [...earlyFrames, ...lateFrames].slice(0, frameCount);
+  const times = phasePoints.map((p) =>
+    Math.max(0.1, Math.min(duration - 0.1, p * duration))
   );
 
   const frames: string[] = [];
