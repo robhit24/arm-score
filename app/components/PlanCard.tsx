@@ -84,8 +84,8 @@ export function PlanCard({
           </button>
 
           <div className={s.delivery}>
-            Delivered by email within{" "}
-            <span className={s.deliveryAccent}>2 hours</span>
+            Delivered by email in{" "}
+            <span className={s.deliveryAccent}>minutes</span>
           </div>
         </div>
       </div>
