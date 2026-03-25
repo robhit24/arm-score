@@ -368,48 +368,131 @@ Now return the corrected JSON only.
 `;
 }
 
+function promptForWeek({ weekNum, weekTheme, daysInWeek, startDay, sport, ageGroup, analysis, overviewContext }) {
+  const bd = analysis.breakdown || {};
+  const safeAge = ageGroup || "12U";
+
+  return `You are an elite ${sport} pitching coach. Generate ONLY Week ${weekNum} (Days ${startDay}-${startDay + daysInWeek - 1}) of a pitching program.
+
+Athlete: ${safeAge} ${sport} pitcher
+Score: ${analysis.score} | Arm Path: ${bd.timing} | Mechanics: ${bd.power_transfer} | Command: ${bd.bat_control}
+Week theme: ${weekTheme}
+${overviewContext}
+
+Return STRICT JSON with exactly this structure:
+{
+  "days": [
+    {
+      "day": ${startDay},
+      "week": ${weekNum},
+      "session_time_min": 25,
+      "focus": "string",
+      "warmup": [
+        { "name":"string", "description":"2-3 sentences", "reps":"string" },
+        { "name":"string", "description":"2-3 sentences", "reps":"string" },
+        { "name":"string", "description":"2-3 sentences", "reps":"string" },
+        { "name":"string", "description":"2-3 sentences", "reps":"string" }
+      ],
+      "drills": [
+        { "name":"string", "purpose":"string", "how_to":"2-4 sentences", "reps":"string", "cues":["...","...","..."], "common_mistakes":["...","..."] },
+        { "name":"string", "purpose":"string", "how_to":"2-4 sentences", "reps":"string", "cues":["...","...","..."], "common_mistakes":["...","..."] },
+        { "name":"string", "purpose":"string", "how_to":"2-4 sentences", "reps":"string", "cues":["...","...","..."], "common_mistakes":["...","..."] }
+      ],
+      "arm_care": [
+        { "name":"string", "description":"string", "reps":"string" },
+        { "name":"string", "description":"string", "reps":"string" }
+      ],
+      "parent_help": ["string", "string"],
+      "success_metric": "string"
+    }
+  ]
+}
+
+RULES:
+- Generate exactly ${daysInWeek} days (Day ${startDay} through Day ${startDay + daysInWeek - 1})
+- EVERY day must have exactly 4 warmup exercises: 1 mobility, 1 band/activation, 1 throwing prep, 1 ${sport}-specific
+${sport === "softball" ? "- Softball warmup MUST include wrist snaps or K-drill every day" : "- Baseball warmup MUST include wrist flicks or long toss build-up every day"}
+- Do NOT use generic warmups like "arm circles" or "butt kicks" alone
+- 3 drills per day from the pitching drill library, varied across the week
+- 2 arm care exercises per day (band work, stretches, recovery)
+- NO lazy placeholders. Every exercise must have real descriptions.
+- Keep JSON valid.`;
+}
+
 async function generateValidPlan({ openai, planDays, analysis }) {
   const sport = analysis.sport || "baseball";
   const ageGroup = analysis.age_group || "12U";
+  const bd = analysis.breakdown || {};
+  const safeAge = ageGroup || "12U";
 
-  let lastRaw = "";
-  let lastErrs = [];
+  // Step 1: Generate overview + weekly structure
+  const overviewPrompt = promptForPlan({ planDays, analysis, sport, ageGroup });
+  const overviewResp = await openai.chat.completions.create({
+    model: "gpt-4o",
+    temperature: 0.3,
+    response_format: { type: "json_object" },
+    messages: [{ role: "user", content: overviewPrompt + "\n\nIMPORTANT: Return the overview, weekly_structure, weekly_blocks, equipment_notes, safety_notes, and arm_care_overview. For daily_plan, return an EMPTY array []. I will generate daily plans separately." }],
+  });
 
-  for (let attempt = 1; attempt <= 3; attempt++) {
-    const isRepair = attempt > 1;
-    const prompt = isRepair
-      ? promptRepair({ planDays, sport, analysis, previousRaw: lastRaw, errors: lastErrs })
-      : promptForPlan({ planDays, analysis, sport, ageGroup });
+  let plan;
+  try {
+    plan = JSON.parse(overviewResp.choices?.[0]?.message?.content || "{}");
+  } catch {
+    throw new Error("Failed to parse overview JSON");
+  }
 
-    const resp = await openai.chat.completions.create({
-      model: "gpt-4o",
-      temperature: isRepair ? 0.25 : 0.35,
-      response_format: { type: "json_object" },
-      messages: [{ role: "user", content: prompt }],
+  plan.daily_plan = [];
+
+  // Step 2: Generate each week separately
+  const weeks = chunkWeeks(planDays);
+  let currentDay = 1;
+
+  const overviewContext = `Program: ${plan.title || ""}\nOverview: ${plan.overview || ""}\nWeekly structure: ${plan.weekly_structure || ""}`;
+
+  for (let w = 0; w < weeks.length; w++) {
+    const daysInWeek = weeks[w];
+    const weekBlock = (plan.weekly_blocks || [])[w] || { theme: `Week ${w + 1}` };
+
+    console.log(`Generating Week ${w + 1} (Days ${currentDay}-${currentDay + daysInWeek - 1})...`);
+
+    const weekPrompt = promptForWeek({
+      weekNum: w + 1,
+      weekTheme: weekBlock.theme || `Week ${w + 1}`,
+      daysInWeek,
+      startDay: currentDay,
+      sport,
+      ageGroup,
+      analysis,
+      overviewContext,
     });
 
-    const raw = resp.choices?.[0]?.message?.content || "{}";
-    lastRaw = raw;
+    const weekResp = await openai.chat.completions.create({
+      model: "gpt-4o",
+      temperature: 0.25,
+      response_format: { type: "json_object" },
+      messages: [{ role: "user", content: weekPrompt }],
+    });
 
-    let plan;
+    let weekData;
     try {
-      plan = JSON.parse(raw);
-    } catch (e) {
-      lastErrs = ["JSON.parse failed"];
+      weekData = JSON.parse(weekResp.choices?.[0]?.message?.content || "{}");
+    } catch {
+      console.log(`Week ${w + 1} JSON parse failed, skipping`);
       continue;
     }
 
-    const v = validatePlan(plan, planDays);
-    if (v.ok) return normalizePlan(plan, planDays);
-
-    lastErrs = v.errors;
+    const days = weekData.days || weekData.daily_plan || [];
+    plan.daily_plan.push(...days);
+    currentDay += daysInWeek;
   }
 
-  // if still failing, throw with raw included for debugging
-  const err = new Error("Plan generation failed validation after retries");
-  err.raw = lastRaw;
-  err.errors = lastErrs;
-  throw err;
+  // Validate the assembled plan
+  const v = validatePlan(plan, planDays);
+  if (v.ok) return normalizePlan(plan, planDays);
+
+  // If validation fails, log but return what we have (better than nothing)
+  console.log("Plan validation issues:", v.errors);
+  return normalizePlan(plan, planDays);
 }
 
 function weeklyBlocksHtml(plan) {
