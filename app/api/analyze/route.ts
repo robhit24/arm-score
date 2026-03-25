@@ -99,26 +99,23 @@ Below 50: Wild release. No consistency. Can't repeat the delivery. Head flies of
 
 IMPORTANT RULES:
 - Score each category INDEPENDENTLY based on what you see in the frames
-- Be specific in top3 — reference actual body positions visible in the frames
-- top3 format: "Issue — impact on pitch", keep each under 12 words
-- score_label: one confident phrase (reference their specific pattern)
-- impact_line: what their weakest area is costing them right now
-- uplift_line: specific mph/command gain if fixed (vary the range, e.g. "2-5 mph" or "improves strike % by 15-20%")
-- SCORING HONESTY IS CRITICAL. Use the FULL 0-100 range:
-  - A terrible delivery with no mechanics = 15-30
-  - A beginner with major flaws = 30-50
-  - Average youth pitcher = 50-65
-  - Good mechanics with fixable issues = 65-78
-  - Very strong delivery = 78-88
-  - Elite/near-perfect = 88-100
-- Do NOT cluster everything in the 60-80 range. Sugar-coating helps no one.
+- top3 format: "Issue — impact", keep each under 12 words
+- score_label: one confident phrase unique to this delivery
+- impact_line: what their #1 weakness costs them
+- uplift_line: specific gain if fixed (vary: "2-5 mph", "15-20% more strikes", "3-6 ft of movement")
+- Use FULL 0-100 range. Average youth = 50-65. Do NOT cluster 60-80.
 
-CONSISTENCY RULES (critical):
-- Base scores strictly on visible mechanics in the frames, not assumptions
-- Score the SAME way every time: identical frames should produce scores within 2-3 points of each other
-- Each category score must be independently justified by what you see
-- Do NOT randomize scores. If the elbow drops below slot, that's a 50-65 arm path score every time
-- top3 issues should reference the same mechanical problems if the same problems are visible
+TOP 3 VARIETY (critical — do NOT repeat the same generic issues every time):
+Look for ALL of these and only report the 3 that are MOST visible in the frames:
+- Arm path: inverted W, short-arming, forearm flyout, arm drag, late arm cocking, elbow spiral issues, arm slot inconsistency
+- Lower half: stride length (% of height), stride direction (open/closed), lead leg brace or collapse, back hip drive, weight transfer timing, front foot landing angle
+- Upper body: trunk tilt at release, head position (on-line or off), glove side pull/tuck, posture collapse, early shoulder rotation, spine angle
+- Timing/sequence: hip-shoulder separation amount, when hips fire vs arm, early trunk rotation, rushing delivery
+- Release: release point height, release point consistency, wrist position, pronation timing, finger position
+- Balance: finish position, falling off to side, ability to field after release, back leg drive through
+- ${sport === "softball" ? "Softball-specific: windmill circle path, snap timing, brush contact, wrist snap angle, stride to power line" : "Baseball-specific: back leg drive, hip/trunk connection, front side stability, velo arm speed"}
+
+Do NOT default to "elbow below shoulder, stride short, release inconsistent" unless those are genuinely the 3 most visible issues. Be SPECIFIC about what you see in each frame.
 
 Return STRICT JSON:
 {
