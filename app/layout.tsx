@@ -22,11 +22,11 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "ArmIQ AI — Free Pitch Score + Custom Training Plan",
   description:
-    "Upload a pitching video, get a free score with your top 3 velocity-killing mistakes, and receive a custom pitching program delivered in 2 hours.",
+    "Upload a pitching video, get a free score with your top 3 velocity-killing mistakes, and receive a custom pitching program delivered in minutes.",
   openGraph: {
     title: "ArmIQ AI — Free Pitch Score",
     description:
-      "Upload a pitching video, get a free score with your top 3 fixes, and a custom training plan in 2 hours.",
+      "Upload a pitching video, get a free score with your top 3 fixes, and a custom training plan in minutes.",
     type: "website",
     images: [{ url: "/api/og", width: 1200, height: 630 }],
   },
@@ -34,7 +34,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "ArmIQ AI — Free Pitch Score",
     description:
-      "Upload a pitching video, get a free score with your top 3 fixes, and a custom training plan in 2 hours.",
+      "Upload a pitching video, get a free score with your top 3 fixes, and a custom training plan in minutes.",
     images: ["/api/og"],
   },
 };

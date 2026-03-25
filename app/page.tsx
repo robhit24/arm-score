@@ -497,7 +497,7 @@ export default function Page() {
             </h1>
             <p className={s.subhead}>
               Upload a pitch, get your score + top 3 fixes in seconds.
-              Custom pitching program delivered in 2 hours.
+              Custom pitching program delivered in minutes.
             </p>
             <div className={s.proofRow}>
               <span className={s.proofItem}>1,000+ pitchers analyzed</span>
@@ -769,7 +769,7 @@ export default function Page() {
                   </div>
                   <div className={s.offersSubtitle}>
                     Custom-built from your {result.score} score. Delivered in{" "}
-                    <span className={s.accent}>2 hours</span>.
+                    <span className={s.accent}>minutes</span>.
                   </div>
                 </div>
 
@@ -897,7 +897,7 @@ export default function Page() {
                     />
                     <FAQ
                       q="When do I get it?"
-                      a="Within 2 hours after checkout. It's delivered to the email you entered."
+                      a="Within minutes after checkout. It's delivered to the email you entered."
                     />
                     <FAQ
                       q="What if I upload a bad angle?"
