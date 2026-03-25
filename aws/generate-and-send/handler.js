@@ -324,7 +324,7 @@ OUTPUT: Return STRICT JSON ONLY with exactly these keys:
     }
   ],
   "equipment_notes": ["...","..."],
-  "safety_notes": ["Include age-appropriate pitch count guidelines for ${safeAge}", "Include rest day recommendations", "Include signs of arm fatigue to watch for", "..."],
+  "safety_notes": ["Write the ACTUAL pitch count limits and rest day rules for ${safeAge} from the guidelines above — real numbers, not placeholders", "Write ACTUAL rest day requirements (e.g. '2 days rest after 36-50 pitches')", "List the ACTUAL warning signs of arm fatigue", "Write a parent protection note about coaches who over-pitch"],
   "arm_care_overview": "string (3-4 sentences explaining the importance of arm care for this age group and what the daily arm care routine targets)"
 }
 
