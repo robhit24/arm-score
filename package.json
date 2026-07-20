@@ -9,6 +9,7 @@
     "lint": "eslint"
   },
   "dependencies": {
+    "@anthropic-ai/sdk": "^0.95.1",
     "@aws-sdk/client-dynamodb": "^3.1015.0",
     "@aws-sdk/client-lambda": "^3.1015.0",
     "@aws-sdk/client-ses": "^3.1015.0",

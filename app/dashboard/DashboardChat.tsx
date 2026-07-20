@@ -2,13 +2,17 @@
 
 import { useState, useRef, useEffect } from "react";
 import s from "./dashboard-chat.module.css";
+import type { Breakdown } from "../types";
 
 type Message = { role: "user" | "assistant"; text: string };
 
 export function DashboardChat({ email, latestScore, breakdown, top3 }: {
   email: string;
   latestScore?: number;
-  breakdown?: { timing: number; power_transfer: number; bat_control: number };
+  // Accepts either the new 5-metric pitching shape or legacy 3-metric. The
+  // chat backend gets passed the breakdown verbatim; either shape is valid
+  // context for Claude (it's just JSON in the prompt).
+  breakdown?: Breakdown;
   top3?: string[];
 }) {
   const [messages, setMessages] = useState<Message[]>([]);
@@ -41,7 +45,7 @@ export function DashboardChat({ email, latestScore, breakdown, top3 }: {
           question: q,
           result: {
             score: latestScore || 0,
-            breakdown: breakdown || { timing: 0, power_transfer: 0, bat_control: 0 },
+            breakdown: breakdown || {},
             top3: top3 || [],
             score_label: "",
             impact_line: "",

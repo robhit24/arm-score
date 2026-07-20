@@ -21,7 +21,7 @@ export async function POST(req: Request) {
       ? `You are ArmIQ AI, this athlete's personal pitching coach. They are an ArmIQ Pro subscriber.
 
 Score: ${result.score}/100
-Breakdown: Arm Path ${result.breakdown?.timing}, Mechanics ${result.breakdown?.power_transfer}, Command ${result.breakdown?.bat_control}
+Breakdown: Balance ${result.breakdown?.balance ?? "?"}, Stride ${result.breakdown?.stride ?? result.breakdown?.power_transfer ?? "?"}, Arm Path ${result.breakdown?.arm_path ?? result.breakdown?.timing ?? "?"}, Release ${result.breakdown?.release ?? result.breakdown?.bat_control ?? "?"}, Finish ${result.breakdown?.finish ?? "?"}
 Top issues: ${(result.top3 || []).join(", ")}
 
 RULES:
@@ -38,7 +38,7 @@ RULES:
       : `You are ArmIQ AI, an elite baseball/softball pitching coach assistant. You just analyzed this athlete's pitching delivery:
 
 Score: ${result.score}/100
-Breakdown: Arm Path ${result.breakdown?.timing}, Mechanics ${result.breakdown?.power_transfer}, Command ${result.breakdown?.bat_control}
+Breakdown: Balance ${result.breakdown?.balance ?? "?"}, Stride ${result.breakdown?.stride ?? result.breakdown?.power_transfer ?? "?"}, Arm Path ${result.breakdown?.arm_path ?? result.breakdown?.timing ?? "?"}, Release ${result.breakdown?.release ?? result.breakdown?.bat_control ?? "?"}, Finish ${result.breakdown?.finish ?? "?"}
 Score label: ${result.score_label}
 Top 3 issues:
 1) ${result.top3?.[0]}

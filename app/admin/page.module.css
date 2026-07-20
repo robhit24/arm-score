@@ -1,0 +1,503 @@
+.page {
+  min-height: 100dvh;
+  background: #0a0a0a;
+  color: #eaeaea;
+  font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial;
+  padding: 32px 28px 80px;
+}
+
+.shell {
+  max-width: 1280px;
+  margin: 0 auto;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 16px;
+  margin-bottom: 28px;
+  padding-bottom: 20px;
+  border-bottom: 1px solid #1f1f1f;
+}
+
+.title {
+  font-size: 22px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
+.who {
+  font-size: 13px;
+  color: #8a8a8a;
+}
+
+.who a {
+  color: #c77d3f;
+  text-decoration: none;
+  margin-left: 12px;
+}
+
+/* ---------- METRIC CARDS ---------- */
+.metricGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 12px;
+  margin-bottom: 36px;
+}
+
+.metric {
+  background: #131313;
+  border: 1px solid #222;
+  border-radius: 10px;
+  padding: 14px 16px;
+}
+
+.metricLabel {
+  font-size: 11px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: #8a8a8a;
+  margin-bottom: 6px;
+}
+
+.metricValue {
+  font-size: 26px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  font-feature-settings: "tnum";
+}
+
+.metricSub {
+  font-size: 12px;
+  color: #6f6f6f;
+  margin-top: 2px;
+}
+
+.metricGood { color: #5b8c5a; }
+.metricWarn { color: #c77d3f; }
+
+/* ---------- SECTION ---------- */
+.section {
+  margin-bottom: 36px;
+}
+
+.sectionHead {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 12px;
+}
+
+.sectionTitle {
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  color: #c8c4bd;
+}
+
+.sectionMeta {
+  font-size: 12px;
+  color: #6f6f6f;
+}
+
+/* ---------- TABLE ---------- */
+.tableWrap {
+  background: #0f0f0f;
+  border: 1px solid #1f1f1f;
+  border-radius: 10px;
+  overflow: auto;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+.table th {
+  text-align: left;
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #6f6f6f;
+  font-weight: 500;
+  padding: 12px 14px;
+  border-bottom: 1px solid #1f1f1f;
+  background: #0a0a0a;
+  position: sticky;
+  top: 0;
+  white-space: nowrap;
+}
+
+.table td {
+  padding: 11px 14px;
+  border-bottom: 1px solid #181818;
+  vertical-align: top;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 280px;
+}
+
+.table tr:last-child td { border-bottom: 0; }
+
+.table tr:hover td {
+  background: #131313;
+}
+
+.scoreCell {
+  font-feature-settings: "tnum";
+  font-weight: 600;
+}
+
+.tag {
+  display: inline-block;
+  font-size: 11px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: #1c1c1c;
+  border: 1px solid #2a2a2a;
+  color: #c8c4bd;
+}
+
+.tagPaid { background: #1d2a1d; border-color: #2c4a2c; color: #8fc28f; }
+.tagSub { background: #2a1d2a; border-color: #4a2c4a; color: #c28fc2; }
+.tagFree { background: #2a261a; border-color: #4a3f1a; color: #d4b86a; }
+
+.empty {
+  padding: 32px;
+  text-align: center;
+  color: #6f6f6f;
+  font-size: 13px;
+}
+
+.deleteBtn {
+  background: transparent;
+  border: 1px solid #3a2222;
+  color: #c77878;
+  width: 24px;
+  height: 24px;
+  border-radius: 6px;
+  font-size: 16px;
+  line-height: 1;
+  cursor: pointer;
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s, border-color 0.15s, color 0.15s;
+}
+
+.deleteBtn:hover:not(:disabled) {
+  background: #2a1818;
+  border-color: #5a2828;
+  color: #e88;
+}
+
+.deleteBtn:disabled {
+  opacity: 0.4;
+  cursor: wait;
+}
+
+.deletedTag {
+  font-size: 11px;
+  color: #6f6f6f;
+  font-style: italic;
+}
+
+/* ---------- GRANT PLAN ---------- */
+.grantBtn {
+  background: transparent;
+  border: 1px solid #2c4a2c;
+  color: #8fc28f;
+  font-size: 11px;
+  padding: 4px 10px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-family: inherit;
+  white-space: nowrap;
+  transition: background 0.15s, border-color 0.15s;
+}
+
+.grantBtn:hover {
+  background: #1d2a1d;
+  border-color: #3a5a3a;
+}
+
+.grantOverlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+  padding: 20px;
+}
+
+.grantModal {
+  background: #131313;
+  border: 1px solid #2a2a2a;
+  border-radius: 12px;
+  width: 100%;
+  max-width: 460px;
+  max-height: 90vh;
+  overflow: auto;
+  display: flex;
+  flex-direction: column;
+}
+
+.grantHead {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 20px;
+  border-bottom: 1px solid #1f1f1f;
+}
+
+.grantTitle {
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  color: #eaeaea;
+}
+
+.grantClose {
+  background: transparent;
+  border: 0;
+  color: #8a8a8a;
+  font-size: 22px;
+  line-height: 1;
+  cursor: pointer;
+  padding: 0 4px;
+}
+
+.grantClose:hover {
+  color: #eaeaea;
+}
+
+.grantBody {
+  padding: 18px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.grantRow {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.grantLabel {
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #8a8a8a;
+}
+
+.grantValue {
+  font-size: 13px;
+  color: #eaeaea;
+  word-break: break-all;
+}
+
+.grantOptions {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.grantOpt {
+  background: #1c1c1c;
+  border: 1px solid #2a2a2a;
+  color: #c8c4bd;
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: 12px;
+  cursor: pointer;
+  font-family: inherit;
+  font-feature-settings: "tnum";
+}
+
+.grantOpt:hover {
+  border-color: #3a3a3a;
+}
+
+.grantOptActive {
+  background: #1d2a1d;
+  border-color: #3a5a3a;
+  color: #8fc28f;
+}
+
+.grantToggle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: #c8c4bd;
+  cursor: pointer;
+}
+
+.grantInput {
+  background: #0d0d0d;
+  border: 1px solid #2a2a2a;
+  border-radius: 6px;
+  padding: 8px 10px;
+  color: #eaeaea;
+  font-family: inherit;
+  font-size: 13px;
+  outline: none;
+}
+
+.grantInput:focus {
+  border-color: #c77d3f;
+}
+
+.grantOk {
+  background: #182a18;
+  border: 1px solid #284a28;
+  border-radius: 6px;
+  padding: 8px 10px;
+  font-size: 12px;
+  color: #8fc28f;
+}
+
+.grantErr {
+  background: #2a1818;
+  border: 1px solid #4a2828;
+  border-radius: 6px;
+  padding: 8px 10px;
+  font-size: 12px;
+  color: #e88;
+}
+
+.grantFoot {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  padding: 14px 20px;
+  border-top: 1px solid #1f1f1f;
+}
+
+.grantCancel {
+  background: transparent;
+  border: 1px solid #2a2a2a;
+  color: #c8c4bd;
+  padding: 8px 16px;
+  border-radius: 6px;
+  font-size: 13px;
+  cursor: pointer;
+  font-family: inherit;
+}
+
+.grantCancel:hover:not(:disabled) {
+  border-color: #3a3a3a;
+}
+
+.grantSubmit {
+  background: #c77d3f;
+  color: #0a0a0a;
+  border: 0;
+  padding: 8px 18px;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: inherit;
+}
+
+.grantSubmit:disabled,
+.grantCancel:disabled {
+  opacity: 0.5;
+  cursor: wait;
+}
+
+/* ---------- SIGN-IN ---------- */
+.signin {
+  max-width: 420px;
+  margin: 80px auto;
+  background: #131313;
+  border: 1px solid #222;
+  border-radius: 14px;
+  padding: 32px;
+}
+
+.signin h1 {
+  font-size: 20px;
+  font-weight: 600;
+  margin: 0 0 8px;
+}
+
+.signin p {
+  font-size: 14px;
+  color: #8a8a8a;
+  margin: 0 0 20px;
+  line-height: 1.5;
+}
+
+.signinForm {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.signinInput {
+  background: #0d0d0d;
+  border: 1px solid #2a2622;
+  border-radius: 10px;
+  padding: 14px 16px;
+  color: #eaeaea;
+  font-family: inherit;
+  font-size: 15px;
+  outline: none;
+}
+
+.signinInput:focus {
+  border-color: #c77d3f;
+}
+
+.signinBtn {
+  background: #c77d3f;
+  color: #0a0a0a;
+  border: 0;
+  border-radius: 999px;
+  padding: 14px 20px;
+  font-family: inherit;
+  font-weight: 600;
+  font-size: 15px;
+  cursor: pointer;
+}
+
+.signinBtn:disabled { opacity: 0.5; cursor: wait; }
+
+.signinNote {
+  font-size: 12px;
+  color: #6f6f6f;
+  margin-top: 12px;
+  text-align: center;
+}
+
+.signinErr {
+  background: #2a1818;
+  border: 1px solid #4a2828;
+  border-radius: 8px;
+  padding: 10px 12px;
+  font-size: 13px;
+  color: #e88;
+  margin-top: 8px;
+}
+
+.signinOk {
+  background: #182a18;
+  border: 1px solid #284a28;
+  border-radius: 8px;
+  padding: 10px 12px;
+  font-size: 13px;
+  color: #8e8;
+  margin-top: 8px;
+}

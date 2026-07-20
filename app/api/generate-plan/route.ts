@@ -1,6 +1,7 @@
 import { getSessionEmail } from "@/app/lib/auth";
+import { queryFirstMatch } from "@/app/lib/dynamo";
 import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
-import { DynamoDBDocumentClient, GetCommand, PutCommand, QueryCommand } from "@aws-sdk/lib-dynamodb";
+import { DynamoDBDocumentClient, GetCommand, PutCommand } from "@aws-sdk/lib-dynamodb";
 import { LambdaClient, InvokeCommand } from "@aws-sdk/client-lambda";
 
 export const runtime = "nodejs";
@@ -38,20 +39,15 @@ export async function POST() {
     }
 
     // Get their latest swing
-    const swingsResult = await ddb.send(
-      new QueryCommand({
-        TableName: "SwingAnalyses",
-        IndexName: "email-index",
-        KeyConditionExpression: "email = :e",
-        FilterExpression: "#src = :armiq AND score > :zero",
-        ExpressionAttributeNames: { "#src": "source" },
-        ExpressionAttributeValues: { ":e": email, ":armiq": "armiq", ":zero": 0 },
-        ScanIndexForward: false,
-        Limit: 10,
-      })
-    );
-
-    const latestSwing = swingsResult.Items?.[0];
+    const latestSwing = await queryFirstMatch(ddb, {
+      TableName: "SwingAnalyses",
+      IndexName: "email-index",
+      KeyConditionExpression: "email = :e",
+      FilterExpression: "#src = :armiq AND score > :zero",
+      ExpressionAttributeNames: { "#src": "source" },
+      ExpressionAttributeValues: { ":e": email, ":armiq": "armiq", ":zero": 0 },
+      ScanIndexForward: false,
+    });
     if (!latestSwing) {
       return Response.json({
         ok: false,

@@ -75,7 +75,7 @@ export function SwingChat({ result }: { result: Result }) {
       <div className={s.messages} ref={messagesRef}>
         <div className={s.msg} data-role="assistant">
           <div className={s.msgBubble} data-role="assistant">
-            I&apos;ve analyzed your swing. Your score is {result.score} with timing at {result.breakdown.timing}, power at {result.breakdown.power_transfer}, and bat control at {result.breakdown.bat_control}. Ask me anything — what a score means, how to fix an issue, or what drills would help.
+            I&apos;ve analyzed your pitch. Your score is {result.score}. Ask me anything — what a score means, how to fix an issue, or what drills would help.
           </div>
         </div>
 

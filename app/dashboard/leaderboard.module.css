@@ -1,41 +1,49 @@
+/* Leaderboard — copper/leather, sport-neutral. Lives on the dark dashboard
+   page; rendered as a graphite card with copper accents so it sits visually
+   below the parchment "centerpiece" cards (latest swing, plan viewer). */
+
 .wrap {
-  background: #fff;
-  border-radius: 18px;
-  border: 1px solid rgba(0, 0, 0, 0.06);
+  background: rgba(244, 239, 230, 0.04);
+  border: 1px solid rgba(var(--copper-rgb), 0.15);
+  border-radius: 16px;
   overflow: hidden;
-  margin-bottom: 14px;
+  margin-bottom: 16px;
 }
 
 .header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 16px 18px 0;
+  padding: 18px 18px 6px;
 }
 
 .title {
-  font-size: 17px;
-  font-weight: 1200;
-  color: #111;
-  letter-spacing: -0.3px;
+  font-size: 11px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--copper);
+  font-weight: 500;
 }
 
 .totalBadge {
   font-size: 11px;
-  font-weight: 950;
-  color: rgba(17, 17, 17, 0.45);
-  padding: 4px 10px;
+  font-weight: 400;
+  color: #9a9a9a;
+  padding: 4px 12px;
   border-radius: 999px;
-  background: #f5f5f5;
+  background: rgba(var(--copper-rgb), 0.08);
+  border: 1px solid rgba(var(--copper-rgb), 0.18);
+  letter-spacing: 0.02em;
 }
 
-/* Your rank */
+/* ─── Your rank — the highlight row ─── */
 .myRank {
-  margin: 12px 18px;
-  padding: 14px;
+  margin: 14px 18px 6px;
+  padding: 16px 18px;
   border-radius: 14px;
-  background: linear-gradient(135deg, rgba(225, 6, 0, 0.06), rgba(225, 6, 0, 0.02));
-  border: 1.5px solid rgba(225, 6, 0, 0.15);
+  background:
+    linear-gradient(135deg, rgba(var(--copper-rgb), 0.20), rgba(var(--copper-rgb), 0.06));
+  border: 1px solid rgba(var(--copper-rgb), 0.40);
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -44,81 +52,98 @@
 .myRankLeft {
   display: flex;
   align-items: baseline;
-  gap: 8px;
+  gap: 10px;
 }
 
 .myRankLabel {
-  font-size: 13px;
-  font-weight: 900;
-  color: rgba(17, 17, 17, 0.55);
+  font-size: 12px;
+  font-weight: 500;
+  color: #9a9a9a;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
 }
 
 .myRankNum {
-  font-size: 24px;
-  font-weight: 1200;
-  color: #111;
-  letter-spacing: -0.5px;
+  font-family: var(--font-fraunces);
+  font-size: 28px;
+  font-weight: 500;
+  color: #faf7f1;
+  letter-spacing: -0.02em;
+  line-height: 1;
+}
+
+.myRankRight {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
 }
 
 .myPercentile {
+  font-family: var(--font-fraunces);
+  font-style: italic;
   font-size: 14px;
-  font-weight: 1100;
-  color: #e10600;
+  font-weight: 500;
+  color: var(--copper-light);
 }
 
-/* Filters */
+/* ─── Filters ─── */
 .filters {
   display: flex;
   gap: 8px;
-  padding: 10px 18px;
+  padding: 12px 18px 10px;
 }
 
 .filterSelect {
   flex: 1;
-  padding: 8px 10px;
+  padding: 9px 12px;
   border-radius: 10px;
-  border: 1.5px solid rgba(17, 17, 17, 0.10);
+  border: 1.5px solid rgba(var(--copper-rgb), 0.22);
   font-size: 13px;
-  color: #111;
-  background: #fff;
+  color: #faf7f1;
+  background: rgba(20, 20, 20, 0.5);
+  font-family: inherit;
   -webkit-appearance: none;
   appearance: none;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%23999' stroke-width='1.5' fill='none'/%3E%3C/svg%3E");
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%23888888' stroke-width='1.5' fill='none'/%3E%3C/svg%3E");
   background-repeat: no-repeat;
-  background-position: right 10px center;
-  padding-right: 28px;
+  background-position: right 12px center;
+  padding-right: 30px;
   cursor: pointer;
+  transition: border-color 140ms ease;
 }
+.filterSelect:focus { outline: none; border-color: var(--copper); }
 
-/* Table */
+/* ─── Table ─── */
 .table {
-  padding: 0 12px 12px;
+  padding: 4px 12px 14px;
 }
 
 .row {
   display: flex;
   align-items: center;
-  gap: 10px;
-  padding: 10px 8px;
+  gap: 12px;
+  padding: 11px 10px;
   border-radius: 10px;
   transition: background 100ms ease;
+  border: 1px solid transparent;
 }
 
 .row:hover {
-  background: rgba(0, 0, 0, 0.02);
+  background: rgba(244, 239, 230, 0.04);
 }
 
 .row[data-you="true"] {
-  background: rgba(225, 6, 0, 0.04);
-  border: 1px solid rgba(225, 6, 0, 0.10);
+  background: rgba(var(--copper-rgb), 0.10);
+  border-color: rgba(var(--copper-rgb), 0.35);
 }
 
 .row[data-top3="true"] {
-  background: rgba(245, 158, 11, 0.04);
+  background: rgba(var(--copper-rgb), 0.05);
 }
 
 .row[data-you="true"][data-top3="true"] {
-  background: rgba(225, 6, 0, 0.06);
+  background: rgba(var(--copper-rgb), 0.13);
+  border-color: rgba(var(--copper-rgb), 0.45);
 }
 
 .rankCol {
@@ -128,9 +153,10 @@
 }
 
 .rankNum {
-  font-size: 14px;
-  font-weight: 1100;
-  color: rgba(17, 17, 17, 0.40);
+  font-family: var(--font-fraunces);
+  font-size: 16px;
+  font-weight: 500;
+  color: #9a9a9a;
 }
 
 .medal {
@@ -143,28 +169,33 @@
 }
 
 .name {
+  font-family: var(--font-fraunces);
   font-size: 14px;
-  font-weight: 1000;
-  color: #111;
+  font-weight: 500;
+  color: #faf7f1;
   display: flex;
   align-items: center;
   gap: 6px;
+  letter-spacing: -0.005em;
 }
 
 .youBadge {
+  font-family: var(--font-inter);
   font-size: 10px;
-  font-weight: 1100;
-  color: #e10600;
-  padding: 2px 6px;
-  border-radius: 4px;
-  background: rgba(225, 6, 0, 0.08);
+  font-weight: 600;
+  color: #faf7f1;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: var(--copper);
+  letter-spacing: 0.04em;
 }
 
 .meta {
   font-size: 11px;
-  font-weight: 800;
-  color: rgba(17, 17, 17, 0.40);
-  margin-top: 1px;
+  font-weight: 400;
+  color: #7a7267;
+  margin-top: 2px;
+  letter-spacing: 0.02em;
 }
 
 .scoreCol {
@@ -173,26 +204,31 @@
 }
 
 .score {
-  font-size: 20px;
-  font-weight: 1200;
-  letter-spacing: -0.5px;
+  font-family: var(--font-fraunces);
+  font-size: 24px;
+  font-weight: 500;
+  letter-spacing: -0.02em;
+  line-height: 1;
 }
 
-.score[data-level="green"] { color: #16a34a; }
-.score[data-level="amber"] { color: #f59e0b; }
-.score[data-level="red"] { color: #dc2626; }
+.score[data-level="green"] { color: var(--copper-light); }
+.score[data-level="amber"] { color: #c4862e; }
+.score[data-level="red"]   { color: #a44a3f; }
 
 .pct {
   font-size: 10px;
-  font-weight: 900;
-  color: rgba(17, 17, 17, 0.40);
+  font-weight: 500;
+  color: #7a7267;
+  margin-top: 3px;
+  letter-spacing: 0.04em;
 }
 
 .loading,
 .empty {
-  padding: 30px 18px;
+  padding: 36px 18px;
   text-align: center;
-  color: rgba(17, 17, 17, 0.40);
-  font-weight: 900;
-  font-size: 13px;
+  color: #7a7267;
+  font-family: var(--font-fraunces);
+  font-style: italic;
+  font-size: 14px;
 }

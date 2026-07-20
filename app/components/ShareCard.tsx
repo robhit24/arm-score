@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { Result } from "../types";
+import { normalizeBreakdown, pickPitchingLabels } from "../lib/score";
 import s from "./ShareCard.module.css";
 
 function scoreColor(score: number) {
@@ -106,10 +107,18 @@ function drawCard(canvas: HTMLCanvasElement, result: Result) {
   const totalW = boxW * 3 + gap * 2;
   const startX = (W - totalW) / 2;
 
+  // Render the 3 most-impactful pitching phases on the share card. The
+  // share canvas was sized for 3 boxes (lines 102-107) and a 5-box layout
+  // is a separate redesign — pick the 3 metrics that drive velo + command
+  // (stride + arm_path + release). normalizeBreakdown handles legacy rows
+  // so old shares still produce valid numbers. Labels follow the sport's
+  // vocabulary via pickPitchingLabels.
+  const bd = normalizeBreakdown(result.breakdown);
+  const labels = pickPitchingLabels(result.sport);
   const barData = [
-    { label: "ARM PATH", value: result.breakdown.timing, glow: cyan },
-    { label: "MECHANICS", value: result.breakdown.power_transfer, glow: neon },
-    { label: "COMMAND", value: result.breakdown.bat_control, glow: magenta },
+    { label: labels.stride.toUpperCase(), value: bd.stride, glow: cyan },
+    { label: labels.arm_path.toUpperCase(), value: bd.arm_path, glow: neon },
+    { label: labels.release.toUpperCase(), value: bd.release, glow: magenta },
   ];
 
   barData.forEach((item, i) => {

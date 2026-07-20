@@ -2,10 +2,20 @@ export const runtime = "nodejs";
 
 export async function POST(req: Request) {
   try {
-    const { email } = await req.json();
+    const { email, redirect } = await req.json();
     if (!email || !email.includes("@")) {
       return new Response("Invalid email", { status: 400 });
     }
+
+    // Open-redirect guard: only honor relative paths starting with `/` and
+    // not `//` (which would resolve to an external host). Anything else
+    // falls back to the default /dashboard redirect at verify time.
+    const safeRedirect =
+      typeof redirect === "string" &&
+      redirect.startsWith("/") &&
+      !redirect.startsWith("//")
+        ? redirect
+        : null;
 
     // Generate magic token
     const token = crypto.randomUUID() + "-" + crypto.randomUUID();
@@ -26,16 +36,28 @@ export async function POST(req: Request) {
     );
 
     const { UpdateCommand } = await import("@aws-sdk/lib-dynamodb");
+    // Persist the redirect alongside the token. `magic_redirect` is the
+    // single source of truth at verify time — keeping it in DynamoDB (vs.
+    // encoded into the token) means the link in the email stays short and
+    // we can't be tricked by a tampered URL into redirecting elsewhere.
+    // REMOVE clears any stale redirect from a prior attempt so the next
+    // sign-in lands on /dashboard by default.
+    const setExpr =
+      "SET magic_token = :t, magic_expires = :e, updated_at = :u" +
+      (safeRedirect ? ", magic_redirect = :r" : "");
+    const updateExpression = safeRedirect ? setExpr : `${setExpr} REMOVE magic_redirect`;
+    const exprValues: Record<string, any> = {
+      ":t": token,
+      ":e": expiresAt,
+      ":u": new Date().toISOString(),
+    };
+    if (safeRedirect) exprValues[":r"] = safeRedirect;
     await ddb.send(
       new UpdateCommand({
         TableName: "ArmIQUsers",
         Key: { email: email.toLowerCase().trim() },
-        UpdateExpression: "SET magic_token = :t, magic_expires = :e, updated_at = :u",
-        ExpressionAttributeValues: {
-          ":t": token,
-          ":e": expiresAt,
-          ":u": new Date().toISOString(),
-        },
+        UpdateExpression: updateExpression,
+        ExpressionAttributeValues: exprValues,
       })
     );
 

@@ -1,76 +1,107 @@
+/* Coach chat — copper/leather, sport-neutral. Sits inside dashboard.module.css's
+   ink page so colors are tuned to read on a dark background. The collapsed
+   "promptBtn" is a parchment pill (matches main page hero sample style) and
+   the open chat is an ink-on-ink panel with parchment assistant bubbles. */
+
 .promptBtn {
   width: 100%;
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: 14px 16px;
+  padding: 16px 18px;
   border-radius: 16px;
-  border: 1.5px solid rgba(0, 0, 0, 0.08);
-  background: #fff;
+  border: 1px solid rgba(var(--copper-rgb), 0.22);
+  background: linear-gradient(180deg, rgba(244, 239, 230, 0.97) 0%, rgba(236, 228, 212, 0.97) 100%);
+  color: #0a0a0a;
   cursor: pointer;
   text-align: left;
-  margin-bottom: 14px;
-  transition: border-color 140ms ease;
+  margin-bottom: 16px;
+  transition: border-color 140ms ease, transform 140ms ease, box-shadow 140ms ease;
   font: inherit;
-  color: inherit;
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.30);
 }
 
 .promptBtn:hover {
-  border-color: rgba(225, 6, 0, 0.3);
+  border-color: rgba(var(--copper-rgb), 0.5);
+  transform: translateY(-1px);
 }
 
 .promptIcon { font-size: 22px; flex: 0 0 auto; }
 
-.promptText { flex: 1; display: flex; flex-direction: column; gap: 1px; }
+.promptText { flex: 1; display: flex; flex-direction: column; gap: 2px; }
 
-.promptTitle { font-size: 14px; font-weight: 1100; color: #111; }
+.promptTitle {
+  font-family: var(--font-fraunces);
+  font-size: 16px;
+  font-weight: 500;
+  color: #0a0a0a;
+  letter-spacing: -0.01em;
+}
 
-.promptSub { font-size: 12px; font-weight: 800; color: rgba(17, 17, 17, 0.45); }
+.promptSub {
+  font-size: 12px;
+  font-weight: 400;
+  color: #7a7267;
+}
 
-.promptArrow { font-size: 18px; color: rgba(17, 17, 17, 0.25); font-weight: 900; }
+.promptArrow {
+  font-size: 18px;
+  color: var(--copper);
+  font-weight: 500;
+}
 
-/* Chat open */
+/* ─── Chat open ─── */
 .wrap {
   border-radius: 16px;
-  border: 1.5px solid rgba(0, 0, 0, 0.08);
-  background: #fff;
+  border: 1px solid rgba(var(--copper-rgb), 0.22);
+  background: rgba(20, 20, 20, 0.6);
   overflow: hidden;
-  margin-bottom: 14px;
+  margin-bottom: 16px;
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.35);
 }
 
 .header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 10px 14px;
-  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
-  background: #fafafa;
+  padding: 12px 16px;
+  border-bottom: 1px solid rgba(var(--copper-rgb), 0.15);
+  background: rgba(var(--copper-rgb), 0.06);
 }
 
 .headerLeft { display: flex; align-items: center; gap: 8px; }
 .headerIcon { font-size: 16px; }
-.headerTitle { font-size: 14px; font-weight: 1100; color: #111; }
+.headerTitle {
+  font-family: var(--font-fraunces);
+  font-size: 14px;
+  font-weight: 500;
+  color: #faf7f1;
+  letter-spacing: -0.005em;
+}
 
 .closeBtn {
   width: 26px;
   height: 26px;
-  border-radius: 8px;
-  border: none;
-  background: rgba(17, 17, 17, 0.06);
-  color: rgba(17, 17, 17, 0.5);
+  border-radius: 999px;
+  border: 1px solid rgba(var(--copper-rgb), 0.25);
+  background: transparent;
+  color: #9a9a9a;
   font-size: 13px;
   cursor: pointer;
   display: grid;
   place-items: center;
+  font-family: inherit;
+  transition: color 140ms ease, border-color 140ms ease;
 }
+.closeBtn:hover { color: #faf7f1; border-color: var(--copper); }
 
 .messages {
-  max-height: 280px;
+  max-height: 320px;
   overflow-y: auto;
-  padding: 12px 14px;
+  padding: 14px 16px;
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 10px;
 }
 
 .msg { display: flex; }
@@ -78,64 +109,82 @@
 
 .msgBubble {
   max-width: 85%;
-  padding: 10px 12px;
-  border-radius: 12px;
-  font-size: 13px;
-  font-weight: 800;
+  padding: 11px 14px;
+  border-radius: 14px;
+  font-size: 13.5px;
+  font-weight: 400;
   line-height: 1.5;
 }
 
+/* Assistant: warm parchment, like a letter on the page */
 .msgBubble[data-role="assistant"] {
-  background: #f5f5f5;
-  color: #222;
+  background: linear-gradient(180deg, #f4efe6, #ece4d4);
+  color: #2a2a2a;
+  border: 1px solid rgba(var(--copper-rgb), 0.18);
   border-bottom-left-radius: 4px;
 }
 
+/* User: copper-tinted ink */
 .msgBubble[data-role="user"] {
-  background: #111;
-  color: #fff;
+  background: var(--copper);
+  color: #faf7f1;
+  font-weight: 500;
   border-bottom-right-radius: 4px;
 }
 
-.typing { color: rgba(17, 17, 17, 0.4); font-style: italic; }
+.typing {
+  color: #7a7267;
+  font-style: italic;
+  font-family: var(--font-fraunces);
+}
 
 .inputRow {
   display: flex;
   gap: 8px;
-  padding: 10px 14px;
-  border-top: 1px solid rgba(0, 0, 0, 0.06);
+  padding: 12px 14px;
+  border-top: 1px solid rgba(var(--copper-rgb), 0.15);
+  background: rgba(10, 10, 10, 0.4);
 }
 
 .input {
   flex: 1;
-  padding: 10px 12px;
-  border-radius: 10px;
-  border: 1.5px solid rgba(17, 17, 17, 0.12);
+  padding: 11px 14px;
+  border-radius: 999px;
+  border: 1px solid rgba(var(--copper-rgb), 0.25);
+  background: rgba(244, 239, 230, 0.04);
   outline: none;
   font-size: 14px;
-  color: #111;
-  transition: border-color 140ms ease;
+  color: #faf7f1;
+  font-family: inherit;
+  transition: border-color 140ms ease, background 140ms ease;
 }
-
-.input:focus { border-color: rgba(225, 6, 0, 0.4); }
+.input:focus { border-color: var(--copper); background: rgba(244, 239, 230, 0.08); }
+.input::placeholder { color: #7a7267; }
 
 .sendBtn {
-  width: 38px;
-  height: 38px;
-  border-radius: 10px;
-  border: none;
-  background: #e10600;
-  color: #fff;
+  width: 40px;
+  height: 40px;
+  border-radius: 999px;
+  border: 0;
+  background: var(--copper);
+  color: #faf7f1;
   font-size: 16px;
-  font-weight: 900;
+  font-weight: 700;
   cursor: pointer;
   display: grid;
   place-items: center;
   flex: 0 0 auto;
+  font-family: inherit;
+  transition: background 140ms ease, transform 140ms ease;
+  box-shadow: 0 4px 14px rgba(var(--copper-rgb), 0.30);
 }
+.sendBtn:hover:not(:disabled) { background: var(--copper-light); transform: translateY(-1px); }
 
 .sendBtn:disabled {
-  background: rgba(17, 17, 17, 0.12);
-  color: rgba(17, 17, 17, 0.3);
+  background: rgba(244, 239, 230, 0.08);
+  color: rgba(250, 247, 241, 0.45);
   cursor: not-allowed;
+  box-shadow: none;
+  transform: none;
+  border: 1px solid rgba(var(--copper-rgb), 0.25);
 }

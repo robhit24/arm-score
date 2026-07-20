@@ -40,3 +40,21 @@ export function sessionCookieOptions(token: string) {
     maxAge: 30 * 24 * 60 * 60, // 30 days
   };
 }
+
+// Admin allowlist via ADMIN_EMAILS env (comma-separated, case-insensitive).
+// Layered on top of the existing armiq_session magic-link flow so admin
+// access never bypasses email verification — an admin still has to prove
+// they own the inbox before getRights kick in.
+export function isAdminEmail(email: string | null | undefined): boolean {
+  if (!email) return false;
+  const allow = (process.env.ADMIN_EMAILS || "")
+    .split(",")
+    .map((s) => s.trim().toLowerCase())
+    .filter(Boolean);
+  return allow.includes(email.toLowerCase().trim());
+}
+
+export async function requireAdmin(): Promise<string | null> {
+  const email = await getSessionEmail();
+  return isAdminEmail(email) ? email : null;
+}

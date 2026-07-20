@@ -1,0 +1,69 @@
+/* Floating theme picker — bottom-right of the dashboard. Collapsed = single
+   accent-colored circle so users notice it without it competing with content;
+   expanded = a row of 6 swatches that slides up to its left. Persisted to
+   localStorage by the parent so refreshes keep the user's choice. */
+
+.wrap {
+  position: fixed;
+  bottom: 18px;
+  right: 18px;
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.toggle {
+  width: 44px;
+  height: 44px;
+  border-radius: 999px;
+  border: 2px solid rgba(250, 247, 241, 0.85);
+  cursor: pointer;
+  font-size: 18px;
+  display: grid;
+  place-items: center;
+  color: #faf7f1;
+  font-family: inherit;
+  font-weight: 500;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.45);
+  transition: transform 140ms ease;
+  flex-shrink: 0;
+}
+.toggle:hover { transform: scale(1.05); }
+
+.swatches {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px;
+  border-radius: 999px;
+  background: rgba(20, 20, 20, 0.85);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(250, 247, 241, 0.12);
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.4);
+  animation: slideIn 180ms ease;
+}
+
+@keyframes slideIn {
+  from { opacity: 0; transform: translateX(8px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
+.swatch {
+  width: 28px;
+  height: 28px;
+  border-radius: 999px;
+  border: 2px solid transparent;
+  cursor: pointer;
+  padding: 0;
+  transition: transform 120ms ease, border-color 120ms ease;
+  flex-shrink: 0;
+}
+
+.swatch:hover { transform: scale(1.12); }
+
+.swatch[data-active="true"] {
+  border-color: #faf7f1;
+  box-shadow: 0 0 0 2px rgba(250, 247, 241, 0.18);
+}

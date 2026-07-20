@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Geist, Geist_Mono, Fraunces, Inter } from "next/font/google";
 import Script from "next/script";
 import "./globals.css";
 
@@ -19,7 +19,24 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
+const fraunces = Fraunces({
+  variable: "--font-fraunces",
+  subsets: ["latin"],
+  display: "swap",
+  weight: ["400", "500", "600", "700"],
+});
+const inter = Inter({
+  variable: "--font-inter",
+  subsets: ["latin"],
+  display: "swap",
+  weight: ["400", "500", "600", "700"],
+});
+
 export const metadata: Metadata = {
+  // Required so /api/og resolves to https://armiq.ai/api/og when social
+  // platforms (Facebook, Twitter, iMessage, Slack) scrape the page. Without
+  // it Next falls back to localhost:3000 during build and warns loudly.
+  metadataBase: new URL("https://armiq.ai"),
   title: "ArmIQ AI — Free Pitch Score + Custom Training Plan",
   description:
     "Upload a pitching video, get a free score with your top 3 velocity-killing mistakes, and receive a custom pitching program delivered in minutes.",
@@ -59,7 +76,7 @@ export default function RootLayout({
           />
         </noscript>
       </head>
-      <body className={`${geistSans.variable} ${geistMono.variable}`}>
+      <body className={`${geistSans.variable} ${geistMono.variable} ${fraunces.variable} ${inter.variable}`}>
         {children}
         <Script id="meta-pixel" strategy="afterInteractive">
           {`

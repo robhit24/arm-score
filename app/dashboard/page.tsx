@@ -2,16 +2,28 @@
 
 import { useEffect, useRef, useState } from "react";
 import { extractFrames } from "../lib/extract-frames";
+import { normalizeBreakdown, pickPitchingLabels, METRIC_ORDER } from "../lib/score";
+import type { Breakdown } from "../types";
 import s from "./dashboard.module.css";
 import { PlanViewer } from "./PlanViewer";
 import { Leaderboard } from "./Leaderboard";
 import { DashboardChat } from "./DashboardChat";
+import { ThemePicker, type ThemeName } from "./ThemePicker";
+
+const THEME_KEY = "armiq-dashboard-theme";
+const VALID_THEMES: ThemeName[] = ["champagne", "green", "blue", "pink", "purple", "mono"];
 
 type Swing = {
   swing_id: string;
   score: number;
   score_label: string;
-  breakdown: { timing: number; power_transfer: number; bat_control: number };
+  // Breakdown is the union of new (5-metric pitching) and legacy (3-metric)
+  // fields — see app/types.ts. Old SwingAnalyses rows from before the
+  // 2026-05-07 migration only have timing/power_transfer/bat_control;
+  // current rows have balance/stride/arm_path/release/finish.
+  // normalizeBreakdown() coerces either shape into the 5-metric form at
+  // render time.
+  breakdown: Breakdown;
   top3: string[];
   sport: string;
   age_group: string;
@@ -36,6 +48,19 @@ export default function Dashboard() {
   const [plans, setPlans] = useState<any[]>([]);
   const [ageRank, setAgeRank] = useState<{ rank: number; total: number; percentile: number; age: string } | null>(null);
 
+  // Theme: champagne is the default. Hydrate from localStorage on mount —
+  // SSR can't read localStorage so we start with champagne and update once
+  // mounted. Keeps initial render deterministic — no hydration mismatch.
+  const [theme, setTheme] = useState<ThemeName>("champagne");
+  useEffect(() => {
+    const stored = localStorage.getItem(THEME_KEY) as ThemeName | null;
+    if (stored && VALID_THEMES.includes(stored)) setTheme(stored);
+  }, []);
+  const handleThemeChange = (t: ThemeName) => {
+    setTheme(t);
+    localStorage.setItem(THEME_KEY, t);
+  };
+
   // Inline pitch analysis
   const [analyzeFile, setAnalyzeFile] = useState<File | null>(null);
   const [analyzeSport, setAnalyzeSport] = useState("baseball");
@@ -54,7 +79,6 @@ export default function Dashboard() {
             .then((r) => r.json())
             .then((d) => {
               setSwings(d.swings || []);
-              // Fetch age group rank based on latest swing
               const latest = d.swings?.[0];
               if (latest?.age_group) {
                 fetch(`/api/leaderboard?age_group=${encodeURIComponent(latest.age_group)}`)
@@ -96,8 +120,15 @@ export default function Dashboard() {
     }
   }
 
+  // Hash frames for the analyze cache. Slice 100-5000 of each frame's
+  // base64 data URL — skipping the first 100 bytes intentionally avoids
+  // the data URL prefix (`data:image/jpeg;base64,/9j/4AAQSkZJRg...`),
+  // which is identical across all JPEGs and previously caused every
+  // distinct video to hash to the same value (swing-score regression
+  // commit aa7207d4). 4900 bytes of body per frame × 8 frames is
+  // ~40KB of distinct content into SHA-256 — collision risk is nil.
   async function hashFrames(frames: string[]): Promise<string> {
-    const sample = frames.map((f) => f.slice(0, 500)).join("|");
+    const sample = frames.map((f) => f.slice(100, 5000)).join("|");
     const buf = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(sample));
     return Array.from(new Uint8Array(buf)).map((b) => b.toString(16).padStart(2, "0")).join("");
   }
@@ -107,7 +138,7 @@ export default function Dashboard() {
     setAnalyzing(true);
     setAnalyzeResult(null);
     try {
-      const frames = await extractFrames(analyzeFile, 4);
+      const frames = await extractFrames(analyzeFile, 8);
       const frameHash = await hashFrames(frames);
 
       const res = await fetch("/api/analyze", {
@@ -118,6 +149,7 @@ export default function Dashboard() {
           sport: analyzeSport,
           age_group: analyzeAge,
           frames,
+          frame_hash: frameHash,
           force_fresh: true,
         }),
       });
@@ -125,7 +157,8 @@ export default function Dashboard() {
       if (!res.ok) throw new Error(await res.text());
       const data = await res.json();
 
-      // Store the analysis
+      // Persist via store-analysis Lambda. frame_hash on the row enables the
+      // analyze route's cache lookup on the next upload of the same video.
       const swingId = crypto.randomUUID();
       await fetch(
         "https://8156f6tuae.execute-api.us-east-2.amazonaws.com/live/store-analysis",
@@ -138,6 +171,7 @@ export default function Dashboard() {
             sport: analyzeSport,
             age_group: analyzeAge,
             source: "armiq",
+            frame_hash: frameHash,
             analysis: data,
           }),
         }
@@ -180,7 +214,7 @@ export default function Dashboard() {
 
   if (loading) {
     return (
-      <div className={s.page}>
+      <div className={s.page} data-theme={theme}>
         <div className={s.container}>
           <div className={s.loading}>Loading...</div>
         </div>
@@ -188,10 +222,9 @@ export default function Dashboard() {
     );
   }
 
-  // Not logged in — show login
   if (!user?.authenticated) {
     return (
-      <div className={s.page}>
+      <div className={s.page} data-theme={theme}>
         <div className={s.container}>
           <div className={s.loginCard}>
             <div className={s.brandRow}>
@@ -248,10 +281,17 @@ export default function Dashboard() {
       ? scoreHistory[scoreHistory.length - 1].score - scoreHistory[0].score
       : 0;
 
+  // Sport-aware labels for the latest pitch breakdown row. Uses the latest
+  // swing's sport so a softball pitcher sees Circle/Snap and a baseball
+  // pitcher sees Arm Path/Release. Underlying scores are the same canonical
+  // shape — only display text differs.
+  const latestLabels = latest ? pickPitchingLabels(latest.sport) : null;
+
   return (
-    <div className={s.page}>
+    <div className={s.page} data-theme={theme}>
+      <ThemePicker current={theme} onChange={handleThemeChange} />
+
       <div className={s.container}>
-        {/* Header */}
         <div className={s.header}>
           <div className={s.brandRow}>
             <div className={s.brandDot} />
@@ -265,7 +305,6 @@ export default function Dashboard() {
           )}
         </div>
 
-        {/* Stats row */}
         <div className={s.statsRow}>
           <div className={s.statCard}>
             <div className={s.statValue}>
@@ -287,7 +326,6 @@ export default function Dashboard() {
           </div>
         </div>
 
-        {/* Generate plan card (subscribers only) */}
         {user.subscribed && swings.length > 0 && (
           <div className={s.planCard}>
             <div className={s.planCardLeft}>
@@ -307,7 +345,6 @@ export default function Dashboard() {
           </div>
         )}
 
-        {/* Current plan */}
         {plans.length > 0 && (
           <PlanViewer
             plan={plans[0].plan}
@@ -316,7 +353,6 @@ export default function Dashboard() {
           />
         )}
 
-        {/* Coach chat */}
         {latest && (
           <DashboardChat
             email={user.email || ""}
@@ -326,12 +362,11 @@ export default function Dashboard() {
           />
         )}
 
-        {/* Score chart */}
         {scoreHistory.length >= 2 && (
           <div className={s.chartCard}>
             <div className={s.chartTitle}>Score History</div>
             <div className={s.chart}>
-              {scoreHistory.map((sw, i) => (
+              {scoreHistory.map((sw) => (
                 <div key={sw.swing_id} className={s.chartBar}>
                   <div
                     className={s.chartFill}
@@ -345,8 +380,7 @@ export default function Dashboard() {
           </div>
         )}
 
-        {/* Latest swing */}
-        {latest && (
+        {latest && latestLabels && (
           <div className={s.latestCard}>
             <div className={s.latestHeader}>
               <div className={s.latestTitle}>Latest Pitch</div>
@@ -361,18 +395,15 @@ export default function Dashboard() {
             </div>
             <div className={s.latestLabel}>{latest.score_label}</div>
             <div className={s.breakdownRow}>
-              <div className={s.bdItem}>
-                <div className={s.bdVal}>{latest.breakdown?.timing}</div>
-                <div className={s.bdLabel}>Timing</div>
-              </div>
-              <div className={s.bdItem}>
-                <div className={s.bdVal}>{latest.breakdown?.power_transfer}</div>
-                <div className={s.bdLabel}>Power</div>
-              </div>
-              <div className={s.bdItem}>
-                <div className={s.bdVal}>{latest.breakdown?.bat_control}</div>
-                <div className={s.bdLabel}>Bat Ctrl</div>
-              </div>
+              {(() => {
+                const bd = normalizeBreakdown(latest.breakdown);
+                return METRIC_ORDER.map((key) => (
+                  <div key={key} className={s.bdItem}>
+                    <div className={s.bdVal}>{bd[key]}</div>
+                    <div className={s.bdLabel}>{latestLabels[key]}</div>
+                  </div>
+                ));
+              })()}
             </div>
             <div className={s.fixList}>
               {(latest.top3 || []).map((fix, i) => (
@@ -385,7 +416,6 @@ export default function Dashboard() {
           </div>
         )}
 
-        {/* Analyze new swing — inline */}
         <div className={s.analyzeCard}>
           <div className={s.analyzeTitle}>Analyze New Pitch</div>
 
@@ -454,7 +484,6 @@ export default function Dashboard() {
           )}
         </div>
 
-        {/* Swing history — most recent 10 */}
         {swings.length > 1 && (
           <div className={s.historySection}>
             <div className={s.historyHeader}>
@@ -480,15 +509,13 @@ export default function Dashboard() {
           </div>
         )}
 
-        {/* Leaderboard */}
         {swings.length > 0 && <Leaderboard />}
 
-        {/* Empty state */}
         {swings.length === 0 && (
           <div className={s.empty}>
             <div className={s.emptyTitle}>No pitches yet</div>
             <div className={s.emptySub}>
-              Upload your first swing to start tracking your progress.
+              Upload your first pitch to start tracking your progress.
             </div>
             <a href="/" className={s.analyzeBtn}>
               Analyze Your First Pitch →

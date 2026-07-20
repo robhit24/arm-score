@@ -1,297 +1,403 @@
+/* Plan viewer — copper/leather, sport-neutral. The plan is the single most
+   important surface in the dashboard, so it gets the centerpiece treatment:
+   parchment outer card on ink, with day cards as collapsible parchment
+   sub-cards. Drill cards use a slightly darker parchment-warm so they read
+   as a layer below the day. */
+
 .wrap {
-  background: #fff;
+  background: linear-gradient(180deg, rgba(244, 239, 230, 0.97) 0%, rgba(236, 228, 212, 0.97) 100%);
+  color: #0a0a0a;
+  border: 1px solid rgba(var(--copper-rgb), 0.25);
   border-radius: 18px;
-  border: 1px solid rgba(0, 0, 0, 0.06);
+  /* max-width: 100% + min-width: 0 prevents long unbreakable inner content
+     (e.g. JSON-stringified reps, long URLs) from pushing the card wider than
+     its container on mobile. overflow:hidden alone wasn't enough — flex/grid
+     intrinsic sizing can still expand the parent past 100%. */
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
   overflow: hidden;
-  margin-bottom: 14px;
+  margin-bottom: 16px;
+  box-shadow:
+    0 30px 60px rgba(0, 0, 0, 0.45),
+    0 10px 24px rgba(var(--copper-rgb), 0.14);
 }
 
+/* Stack title above the date so the title gets full card width on mobile.
+   Earlier this was a flex row with justify-content: space-between, which on
+   narrow viewports forced the long Fraunces title into a 4-line column on
+   the left while the date sat on the right — looked jammed. */
 .header {
   display: flex;
-  justify-content: space-between;
-  align-items: baseline;
-  padding: 16px 18px 0;
+  flex-direction: column;
+  align-items: flex-start;
+  padding: 20px 22px 4px;
+  gap: 4px;
 }
 
 .title {
-  font-size: 17px;
-  font-weight: 1200;
-  color: #111;
-  letter-spacing: -0.3px;
+  font-family: var(--font-fraunces);
+  font-size: 22px;
+  font-weight: 500;
+  color: #0a0a0a;
+  letter-spacing: -0.02em;
+  line-height: 1.2;
 }
 
 .date {
   font-size: 11px;
-  font-weight: 800;
-  color: rgba(17, 17, 17, 0.40);
+  font-weight: 400;
+  color: #7a7267;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
 }
 
 .overview {
-  padding: 8px 18px 14px;
-  font-size: 13px;
-  font-weight: 850;
-  color: rgba(17, 17, 17, 0.60);
-  line-height: 1.5;
+  padding: 10px 22px 16px;
+  font-size: 14px;
+  font-weight: 400;
+  color: #3a3530;
+  line-height: 1.55;
+  font-family: var(--font-fraunces);
+  font-style: italic;
 }
 
-/* Week tabs */
+/* ─── Week tabs ─── */
 .weekTabs {
   display: flex;
   gap: 6px;
-  padding: 0 18px 12px;
+  padding: 0 22px 14px;
   overflow-x: auto;
+  border-bottom: 1px solid rgba(20, 20, 20, 0.08);
 }
 
 .weekTab {
   flex: 0 0 auto;
-  padding: 8px 12px;
-  border-radius: 10px;
-  border: 1.5px solid rgba(0, 0, 0, 0.08);
-  background: #fff;
+  padding: 9px 14px;
+  border-radius: 999px;
+  border: 1.5px solid rgba(var(--copper-rgb), 0.30);
+  background: transparent;
   cursor: pointer;
   text-align: left;
-  transition: border-color 140ms ease, background 140ms ease;
+  transition: border-color 140ms ease, background 140ms ease, color 140ms ease;
   font: inherit;
-  color: inherit;
+  color: #3a3530;
+  font-family: inherit;
 }
 
 .weekTab:hover {
-  border-color: rgba(0, 0, 0, 0.15);
+  border-color: var(--copper);
+  background: rgba(var(--copper-rgb), 0.06);
 }
 
 .weekTab[data-active="true"] {
-  border-color: #e10600;
-  background: rgba(225, 6, 0, 0.04);
+  border-color: transparent;
+  background: var(--copper);
+  color: #faf7f1;
 }
 
 .weekTabNum {
   font-size: 12px;
-  font-weight: 1100;
-  color: #111;
+  font-weight: 600;
+  letter-spacing: 0.04em;
 }
 
 .weekTabTheme {
   font-size: 10px;
-  font-weight: 800;
-  color: rgba(17, 17, 17, 0.45);
-  max-width: 80px;
+  font-weight: 400;
+  margin-top: 1px;
+  max-width: 110px;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  opacity: 0.85;
 }
 
 .weekInfo {
-  padding: 0 18px 12px;
+  padding: 16px 22px 4px;
 }
 
 .weekGoals {
-  padding: 10px 12px;
-  border-radius: 10px;
-  background: #fafafa;
+  padding: 14px 16px;
+  border-radius: 12px;
+  background: rgba(var(--copper-rgb), 0.07);
+  border: 1px solid rgba(var(--copper-rgb), 0.18);
 }
 
 .label {
   font-size: 10px;
-  font-weight: 950;
-  color: rgba(17, 17, 17, 0.40);
+  font-weight: 600;
+  color: var(--copper-dark);
   text-transform: uppercase;
-  letter-spacing: 0.3px;
-  margin-bottom: 4px;
+  letter-spacing: 0.18em;
+  margin-bottom: 6px;
 }
 
 .goalItem {
-  font-size: 12px;
-  font-weight: 850;
-  color: #444;
-  padding: 2px 0;
+  font-size: 13px;
+  font-weight: 400;
+  color: #3a3530;
+  padding: 3px 0;
+  line-height: 1.5;
 }
 
-/* Days */
+/* ─── Days list ─── */
 .daysList {
-  padding: 0 12px 12px;
+  padding: 12px 16px 18px;
   display: grid;
-  gap: 6px;
+  gap: 8px;
 }
 
 .dayCard {
-  border: 1px solid rgba(0, 0, 0, 0.06);
+  border: 1px solid rgba(var(--copper-rgb), 0.18);
   border-radius: 12px;
   overflow: hidden;
+  background: rgba(250, 247, 241, 0.65);
+  transition: border-color 140ms ease;
 }
+.dayCard:hover { border-color: rgba(var(--copper-rgb), 0.35); }
 
 .dayHeader {
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 10px 12px;
+  gap: 10px;
+  padding: 12px 14px;
   width: 100%;
-  border: none;
+  border: 0;
   background: none;
   cursor: pointer;
   font: inherit;
-  color: inherit;
+  font-family: inherit;
   text-align: left;
 }
 
 .dayHeader:hover {
-  background: rgba(0, 0, 0, 0.02);
+  background: rgba(var(--copper-rgb), 0.05);
 }
 
 .dayBadge {
-  padding: 3px 8px;
-  border-radius: 6px;
-  background: #e10600;
-  color: #fff;
-  font-size: 10px;
-  font-weight: 1000;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: var(--copper);
+  color: #faf7f1;
+  font-size: 10.5px;
+  font-weight: 600;
   white-space: nowrap;
+  letter-spacing: 0.04em;
+  flex-shrink: 0;
 }
 
 .dayFocus {
   flex: 1;
-  font-size: 13px;
-  font-weight: 950;
-  color: #111;
+  /* Without min-width: 0 a long focus string forces the flex row wider than
+     the card and pushes dayTime + chevron off the right edge on mobile. */
+  min-width: 0;
+  overflow-wrap: anywhere;
+  font-family: var(--font-fraunces);
+  font-size: 14px;
+  font-weight: 500;
+  color: #0a0a0a;
+  letter-spacing: -0.005em;
+  line-height: 1.3;
 }
 
 .dayTime {
   font-size: 11px;
-  font-weight: 800;
-  color: rgba(17, 17, 17, 0.40);
+  font-weight: 500;
+  color: #7a7267;
+  letter-spacing: 0.02em;
+  flex-shrink: 0;
 }
 
 .dayChevron {
-  font-size: 16px;
-  color: rgba(17, 17, 17, 0.30);
+  font-size: 18px;
+  color: var(--copper);
   transition: transform 200ms ease;
+  font-weight: 500;
+  flex-shrink: 0;
 }
 
 .dayChevron[data-open="true"] {
   transform: rotate(90deg);
 }
 
-/* Day body */
+/* ─── Day body ─── */
 .dayBody {
-  padding: 0 12px 14px;
+  padding: 4px 14px 16px;
   display: grid;
-  gap: 12px;
+  gap: 14px;
+  border-top: 1px solid rgba(var(--copper-rgb), 0.12);
 }
 
 .section {
   display: grid;
-  gap: 6px;
+  gap: 8px;
 }
 
 .sectionTitle {
   font-size: 10px;
-  font-weight: 1000;
-  color: rgba(17, 17, 17, 0.45);
+  font-weight: 600;
+  color: var(--copper-dark);
   text-transform: uppercase;
-  letter-spacing: 0.4px;
-  padding-bottom: 4px;
-  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+  letter-spacing: 0.18em;
+  padding: 10px 0 4px;
+}
+
+.warmupPhase {
+  display: grid;
+  gap: 6px;
+}
+
+.phaseLabel {
+  font-size: 9px;
+  font-weight: 700;
+  color: var(--copper);
+  text-transform: uppercase;
+  letter-spacing: 0.22em;
+  padding: 6px 2px 0;
 }
 
 .miniCard {
-  padding: 8px 10px;
-  border-radius: 8px;
-  background: #fafafa;
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: rgba(var(--copper-rgb), 0.06);
+  border: 1px solid rgba(var(--copper-rgb), 0.12);
 }
 
 .miniName {
+  font-family: var(--font-fraunces);
   font-size: 13px;
-  font-weight: 1000;
-  color: #111;
+  font-weight: 500;
+  color: #0a0a0a;
+  letter-spacing: -0.005em;
 }
 
 .miniDesc {
   font-size: 12px;
-  font-weight: 800;
+  font-weight: 400;
   color: #555;
-  margin-top: 2px;
+  margin-top: 3px;
+  line-height: 1.45;
 }
 
 .miniReps {
   font-size: 11px;
-  font-weight: 900;
-  color: #e10600;
-  margin-top: 3px;
+  font-weight: 600;
+  color: var(--copper-dark);
+  margin-top: 5px;
+  letter-spacing: 0.04em;
 }
 
-/* Drill card */
+/* ─── Drill card ─── */
 .drillCard {
-  padding: 10px 12px;
-  border-radius: 10px;
-  background: #fafafa;
+  padding: 12px 14px;
+  border-radius: 12px;
+  background: rgba(var(--copper-rgb), 0.07);
+  border: 1px solid rgba(var(--copper-rgb), 0.18);
 }
 
 .drillTop {
   display: flex;
   justify-content: space-between;
   align-items: baseline;
-  gap: 8px;
+  gap: 10px;
+  flex-wrap: wrap;
 }
 
 .drillName {
-  font-size: 14px;
-  font-weight: 1100;
-  color: #111;
+  font-family: var(--font-fraunces);
+  font-size: 15px;
+  font-weight: 500;
+  color: #0a0a0a;
+  letter-spacing: -0.01em;
+  /* min-width: 0 + overflow-wrap so a long drill name doesn't push reps off
+     the right edge on narrow viewports. */
+  min-width: 0;
+  flex: 1 1 auto;
+  overflow-wrap: anywhere;
 }
 
 .drillReps {
-  font-size: 12px;
-  font-weight: 900;
-  color: #e10600;
-  white-space: nowrap;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--copper-dark);
+  /* Removed white-space: nowrap. When the model returns reps as an object
+     instead of a string, the formatted result can be long enough to push the
+     drillTop row wider than the card on mobile. Allow wrap + break so it
+     never escapes its container. */
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  overflow-wrap: anywhere;
+  flex-shrink: 1;
 }
 
 .drillPurpose {
   font-size: 12px;
-  font-weight: 800;
-  color: #666;
-  margin-top: 3px;
+  font-weight: 400;
+  color: #6a625a;
+  margin-top: 4px;
+  font-style: italic;
+  font-family: var(--font-fraunces);
 }
 
 .drillHow {
-  font-size: 12px;
-  font-weight: 850;
-  color: #333;
-  line-height: 1.5;
-  margin-top: 4px;
+  font-size: 12.5px;
+  font-weight: 400;
+  color: #2a2a2a;
+  line-height: 1.55;
+  margin-top: 8px;
+  overflow-wrap: anywhere;
 }
 
 .drillGrid {
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 8px;
-  margin-top: 8px;
+  /* Single column on mobile — two-column was too tight, cue text would
+     overflow the card and create horizontal scroll. Restore 1fr 1fr at
+     >=480px where there's room for both. */
+  grid-template-columns: 1fr;
+  gap: 12px;
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid rgba(var(--copper-rgb), 0.18);
+}
+
+@media (min-width: 480px) {
+  .drillGrid { grid-template-columns: 1fr 1fr; }
 }
 
 .cueItem {
-  font-size: 11px;
-  font-weight: 800;
-  color: #555;
-  padding: 1px 0;
+  font-size: 11.5px;
+  font-weight: 400;
+  color: #4a443e;
+  padding: 2px 0;
+  line-height: 1.45;
+  overflow-wrap: anywhere;
 }
 
 .parentItem {
-  font-size: 12px;
-  font-weight: 850;
-  color: #444;
-  padding: 4px 0;
-  border-bottom: 1px solid rgba(0, 0, 0, 0.04);
+  font-size: 12.5px;
+  font-weight: 400;
+  color: #3a3530;
+  padding: 6px 0;
+  line-height: 1.5;
+  border-bottom: 1px solid rgba(20, 20, 20, 0.06);
+  overflow-wrap: anywhere;
 }
 
 .parentItem:last-child {
   border-bottom: none;
+  padding-bottom: 0;
 }
 
+/* Success metric — gets its own moss-tinted callout (sport-neutral
+   "achievement" color, complements copper without competing) */
 .metric {
-  padding: 10px 12px;
+  padding: 12px 14px;
   border-radius: 10px;
-  background: #f0fdf4;
-  border: 1px solid #dcfce7;
-  font-size: 12px;
-  font-weight: 900;
-  color: #166534;
+  background: rgba(107, 127, 58, 0.10);
+  border: 1px solid rgba(107, 127, 58, 0.28);
+  font-size: 12.5px;
+  font-weight: 500;
+  color: #3a4a18;
+  line-height: 1.5;
 }

@@ -6,14 +6,14 @@ provider:
   runtime: nodejs20.x
   region: us-east-2
   stage: live
-  timeout: 300
+  timeout: 900
   memorySize: 1536
 
   environment:
     SWING_TABLE: SwingAnalyses
     JOBS_TABLE: PlanJobs
     SES_FROM: ${env:SES_FROM}
-    OPENAI_API_KEY: ${env:OPENAI_API_KEY}
+    ANTHROPIC_API_KEY: ${env:ANTHROPIC_API_KEY}
     BRAND_NAME: ArmIQ
     BRAND_PRIMARY: "#e10600"
     BRAND_DARK: "#111111"

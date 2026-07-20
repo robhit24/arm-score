@@ -16,9 +16,11 @@ export function ExampleScorePreview() {
 
         <div className={s.bars}>
           {[
+            { label: "Balance", value: 87 },
+            { label: "Stride", value: 90 },
             { label: "Arm Path", value: 91 },
-            { label: "Mechanics", value: 88 },
-            { label: "Command", value: 86 },
+            { label: "Release", value: 88 },
+            { label: "Finish", value: 86 },
           ].map((item) => (
             <div key={item.label} className={s.barItem}>
               <div className={s.barHeader}>
