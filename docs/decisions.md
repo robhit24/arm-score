@@ -1,0 +1,13 @@
+# Decisions
+
+## 2026-07-19 — Stripe app-tagging on the shared account
+Every Stripe object armiq creates carries `metadata.app = "armiq"`, centralized in `app/lib/stripe.ts stripePost()` (never at call sites). Why: the account (`acct_1TENE9H3giAURZQ1`) is shared with HIT24 and batiq; HIT24's finance reporting counts any charge without a foreign app tag as HIT24 revenue (checks charge- and PaymentIntent-level metadata). Checkout doesn't propagate session metadata down, so payment-mode sessions also set `payment_intent_data.metadata`, subscription-mode set `subscription_data.metadata`, and the `invoice.paid` webhook stamps subscription-cycle PaymentIntents. Tags also give free per-app Dashboard/Sigma filtering and identify armiq's objects for an eventual migration to its own account. Do not touch: `app:hit24` objects, members.hit24.com webhooks, COMP_MEMBER_100 / FREE_MONTH_FEE_WAIVED coupons, SHOPIFYPAID promo code.
+
+## 2026-07-19 — Webhook processes only armiq-owned events
+armiq's Stripe webhook receives every event on the shared account, so each handler verifies ownership before acting: sessions via their own `metadata.source`/`app`, subscriptions/invoices via subscription `metadata.app == "armiq"` (reliable because all armiq subs are tagged at creation; armiq had zero pre-tag subs). Why: ungated handling wrote batiq buyers into ArmIQUsers with `subscribed:true` (free Pro), reacted to batiq lifecycle events, and fired armiq's Meta pixel for batiq purchases. Consequence: ArmIQUsers rows created before 2026-07-19 may be batiq-derived; rows after are trustworthy.
+
+## 2026-07-19 — Never combine DynamoDB Limit with FilterExpression
+Both Scan and Query apply `Limit` to items READ, before the filter — `Limit:1` + filter examines one arbitrary/newest item and misses real matches (broke webhook customer lookups and "latest armiq swing" queries on the batiq-shared SwingAnalyses table). Rule: paginate instead — `queryFirstMatch()` in `app/lib/dynamo.ts` or `findUserByCustomerId()` in the webhook. (Same bug was previously found in the frame-hash cache on swing-score, 2026-05-07 — see comment at `app/api/analyze/route.ts:117`.)
+
+## 2026-07-19 — Deploy path
+Vercel project `arm-score` is git-linked: push to `main` on `robhit24/arm-score` auto-deploys to production (armiq.ai). `vercel deploy --prod` from local also works (used once this session). GitHub pushes require the `robhit24` account (local default credential `rdotco` lacks access). Lambda (`aws/generate-and-send`) deploys separately via `npx serverless deploy` from that dir with `SES_FROM`/`ANTHROPIC_API_KEY` in the shell env (readable from the deployed function's config).
